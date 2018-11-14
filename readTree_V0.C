@@ -63,8 +63,8 @@ void readTree_V0(Int_t nEvents=10, const Char_t *inputFile="test.list", const Ch
 
 	for (int iEv = 0; iEv < nEvents; ++iEv)	{
 		
-		mChain->GetEntry(iEv);
 		bTracks->Clear();
+		mChain->GetEntry(iEv);
 
 		//precut event histos
 		//select event
