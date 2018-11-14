@@ -71,6 +71,7 @@ void readTree_V0(Int_t nEvents=10, const Char_t *inputFile="test.list", const Ch
 		//aftercut event histos
 
 		Int_t nTracks = bTracks->GetEntriesFast();
+		printf("nTracks is %i \n", nTracks);
 		for (int iTr = 0; iTr < nTracks; ++iTr)	{
 			AliAnalysisPIDTrack* track = (AliAnalysisPIDTrack*)bTracks->At(iTr);
 			printf("pt is %f \n", track->GetPt());
