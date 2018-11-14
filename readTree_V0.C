@@ -62,7 +62,8 @@ void readTree_V0(Int_t nEvents=10, const Char_t *inputFile="test.list", const Ch
 	for (int iEv = 0; iEv < 10; ++iEv)	{
 		
 		mChain->GetEntry(iEv);
-		printf("pt is %f \n", Track->At(0)->GetPt());
+		AliAnalysisPIDTrack* iTr = (AliAnalysisPIDTrack*)Track->At(0);
+		printf("pt is %f \n", iTr->GetPt());
 	}
 
 	printf(" WHAT IS UP \n", );
