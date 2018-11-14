@@ -1,14 +1,55 @@
-// V0 reconstruction macro from local aurora trees
+// V0 reconstruction macro from local aurora V0 trees
 // OliverM 2018 Lund
 
+#include <TChain.h>
 #include <iostream>
 
 using namespace std;
+
+TChain* mChain;
+
+bool makeChain(const Char_t *inputFile="test.list") {
+
+	if (!mChain) mChain = new TChain("PIDTree");
+	string const dirFile = inputFile.Data();
+	if (dirFile.find(".lis") != string::npos)	{
+		
+		ifstream inputStream(dirFile.c_str());
+		if (!inputStream)	{
+			cout << "ERROR: Cannot open list file " << dirFile << endl;
+			return false;	}
+
+		int nFile = 0;
+		string file;
+		while (getline(inputStream, file))	{
+	  		if (file.find(".root") != string::npos)	{
+				TFile* ftmp = TFile::Open(file.c_str());
+				if (ftmp && !ftmp->IsZombie() && ftmp->GetNkeys())	{
+		  			cout << " Read in V0 tree file " << file << endl;
+		  			mChain->Add(file.c_str());
+		  			++nFile;	}
+				if (ftmp) ftmp->Close();
+	  		}
+		}
+
+	cout << " Total " << nFile << " files have been read in. " << endl;
+	return true;
+	}
+
+	else if (dirFile.find(".root") != string::npos)	{
+		mChain->Add(dirFile.c_str());	
+		return true;	}
+  	else	{
+		cout << " No good input file to read ... " << endl;
+		return false;	}
+}
 
 void readTree_V0(Int_t nEvents=10, const Char_t *inputFile="test.list", const Char_t *outputFile="test.root") {
 
 	gROOT->LoadMacro("$HOME/sq/load_libraries.C");
 	load_libraries();
+
+	if (!makeChain(inputFile)) printf("Couldn't create the chain! \n", );
 
 	printf(" WHAT IS UP \n", );
 }
