@@ -2,6 +2,7 @@
 // OliverM 2018 Lund
 
 #include <TChain.h>
+#include <TFile.h>
 #include <iostream>
 
 using namespace std;
@@ -11,7 +12,8 @@ TChain* mChain;
 bool makeChain(const Char_t *inputFile="test.list") {
 
 	if (!mChain) mChain = new TChain("PIDTree");
-	string const dirFile = inputFile.Data();
+	TString inputFileStr(inputFile);
+	string const dirFile = inputFileStr.Data();
 	if (dirFile.find(".lis") != string::npos)	{
 		
 		ifstream inputStream(dirFile.c_str());
