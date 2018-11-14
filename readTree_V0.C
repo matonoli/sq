@@ -52,6 +52,7 @@ void readTree_V0(Int_t nEvents=10, const Char_t *inputFile="test.list", const Ch
 	load_libraries();
 
 	if (!makeChain(inputFile)) printf("Couldn't create the chain! \n", );
+	else printf("Chain created with %i entries \n", mChain->GetEntriesFast());
 
 	printf(" WHAT IS UP \n", );
 }
