@@ -56,14 +56,33 @@ void readTree_V0(Int_t nEvents=10, const Char_t *inputFile="test.list", const Ch
 	if (!makeChain(inputFile)) printf("Couldn't create the chain! \n", );
 	else printf("Chain created with %i entries \n", mChain->GetEntries());
 
-	TClonesArray *Track = new TClonesArray("AliAnalysisPIDTrack");
-	mChain->SetBranchAddress("AnalysisTrack",&Track);
+	TClonesArray *bTracks = new TClonesArray("AliAnalysisPIDTrack");
+	mChain->SetBranchAddress("AnalysisTrack",&bTracks);
 
-	for (int iEv = 0; iEv < 10; ++iEv)	{
+	nEvents = (nEvents < mChain->GetEntries()) ? nEvents : mChain->GetEntries();
+
+	for (int iEv = 0; iEv < nEvents; ++iEv)	{
 		
 		mChain->GetEntry(iEv);
-		AliAnalysisPIDTrack* iTr = (AliAnalysisPIDTrack*)Track->At(0);
-		printf("pt is %f \n", iTr->GetPt());
+		bTracks->Clear();
+
+		//precut event histos
+		//select event
+		//aftercut event histos
+
+		Int_t nTracks = bTracks->GetEntriesFast();
+		for (int iTr = 0; iTr < nTracks; ++iTr)	{
+			AliAnalysisPIDTrack* iTr = (AliAnalysisPIDTrack*)bTracks->At(iTr);
+			printf("pt is %f \n", iTr->GetPt());
+
+			//precut track histos
+			//select track
+			//aftercut track histos
+		}
+
+		//v0loop
+
+		
 	}
 
 	printf(" WHAT IS UP \n", );
