@@ -128,7 +128,7 @@ void readTree_V0(Int_t nEvents=10, const Char_t *inputFile="test.list", const Ch
 			if (!v0) continue;
 			hV0Monitor->Fill(1);
 
-			if (!SelectV0(V0)) continue;
+			if (!SelectV0(v0)) continue;
 			hV0Monitor->Fill(2);
 
 			hV0_IMK0s->Fill(v0->GetIMK0s());
