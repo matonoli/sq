@@ -10,6 +10,7 @@
 using namespace std;
 
 TChain* mChain;
+AliAnalysisPIDEvent* mEvent;
 
 bool makeChain(const Char_t *inputFile="test.list") {
 
@@ -58,6 +59,7 @@ void readTree_V0(Int_t nEvents=10, const Char_t *inputFile="test.list", const Ch
 
 	TClonesArray *bTracks = new TClonesArray("AliAnalysisPIDTrack");
 	mChain->SetBranchAddress("AnalysisTrack",&bTracks);
+	mChain->SetBranchAddress("AnalysisEvent",&mEvent);
 
 	nEvents = (nEvents < mChain->GetEntries()) ? nEvents : mChain->GetEntries();
 
@@ -65,10 +67,13 @@ void readTree_V0(Int_t nEvents=10, const Char_t *inputFile="test.list", const Ch
 		
 		bTracks->Clear();
 		mChain->GetEntry(iEv);
+		printf("event vz is %f \n", mEvent->GetVertexZ());
 
 		//precut event histos
 		//select event
 		//aftercut event histos
+
+
 
 		Int_t nTracks = bTracks->GetEntriesFast();
 		printf("nTracks is %i \n", nTracks);
