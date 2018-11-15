@@ -102,7 +102,8 @@ void readTree_V0(Int_t nEvents=10, const Char_t *inputFile="test.list", const Ch
 	TH1F* hEventMonitor			= new TH1F("hEventMonitor","",10,-0.5,9.5);
 	TH1F* hV0Monitor			= new TH1F("hV0Monitor","",10,-0.5,9.5);
 
-	TH1F* hV0_IMK0s				= new TH1F("hV0_IMK0s","",1000,-2,2);
+	TH1F* hV0_IMK0s				= new TH1F("hV0_IMK0s","",2000,-1,1);
+	TH1F* hV0_IML				= new TH1F("hV0_IML","",2000,-1,1);
 
 	nEvents = (nEvents < mChain->GetEntries()) ? nEvents : mChain->GetEntries();
 
@@ -132,6 +133,7 @@ void readTree_V0(Int_t nEvents=10, const Char_t *inputFile="test.list", const Ch
 			hV0Monitor->Fill(2);
 
 			hV0_IMK0s->Fill(v0->GetIMK0s());
+			hV0_IML->Fill(v0->GetIML());
 		}
 
 		Int_t nTracks = bTracks->GetEntriesFast();
@@ -151,5 +153,6 @@ void readTree_V0(Int_t nEvents=10, const Char_t *inputFile="test.list", const Ch
 	}
 
 	printf(" WHAT IS UP \n", );
-	hEventMonitor->Draw();
+	//hEventMonitor->Draw();
+	hV0_IMK0s->Draw();
 }
