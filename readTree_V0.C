@@ -51,9 +51,10 @@ bool makeChain(const Char_t *inputFile="test.list") {
 
 bool SelectEvent(AliAnalysisPIDEvent* e) {
 
-	if (!e->AcceptEvent(true,1)) return false;
+	cout << "ae is " << e->AcceptEvent(1,1) << endl;
+	if (!e->AcceptEvent(1,1)) return false;
 	return true; 
-	
+
 }
 
 void readTree_V0(Int_t nEvents=10, const Char_t *inputFile="test.list", const Char_t *outputFile="test.root") {
