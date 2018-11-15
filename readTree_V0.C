@@ -51,6 +51,9 @@ bool makeChain(const Char_t *inputFile="test.list") {
 
 bool SelectEvent(AliAnalysisPIDEvent* e) {
 
+	if (!e->AcceptEvent(true,1)) return false;
+	return true; 
+	
 }
 
 void readTree_V0(Int_t nEvents=10, const Char_t *inputFile="test.list", const Char_t *outputFile="test.root") {
@@ -73,8 +76,8 @@ void readTree_V0(Int_t nEvents=10, const Char_t *inputFile="test.list", const Ch
 		mChain->GetEntry(iEv);
 		//printf("event vz is %f \n", mEvent->GetVertexZ());
 
-		mEvent->PrintEventSelection();
-		//if (!SelectEvent(mEvent)) continue;
+		if (iEv==0) mEvent->PrintEventSelection();
+		if (!SelectEvent(mEvent)) continue;
 
 		//precut event histos
 		//select event
