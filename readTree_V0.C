@@ -91,6 +91,9 @@ void readTree_V0(Int_t nEvents=10, const Char_t *inputFile="test.list", const Ch
 		//aftercut histos
 		hEventMonitor->Fill(1);
 
+		Int_t nV0s = bV0s->GetEntriesFast();
+		printf("nV0s is %i \n", nV0s);
+
 		Int_t nTracks = bTracks->GetEntriesFast();
 		printf("nTracks is %i \n", nTracks);
 		for (int iTr = 0; iTr < nTracks; ++iTr)	{
