@@ -11,8 +11,8 @@ using namespace std;
 
 TChain* mChain;
 AliAnalysisPIDEvent* mEvent;
-TClonesArray* bTracks;
-TClonesArray* bV0s;
+TClonesArray* bTracks = 0;
+TClonesArray* bV0s = 0;
 
 bool makeChain(const Char_t *inputFile="test.list") {
 
@@ -68,8 +68,8 @@ void readTree_V0(Int_t nEvents=10, const Char_t *inputFile="test.list", const Ch
 	if (!makeChain(inputFile)) printf("Couldn't create the chain! \n", );
 	else printf("Chain created with %i entries \n", mChain->GetEntries());
 
-	*bTracks 	= new TClonesArray("AliAnalysisPIDTrack");
-	*bV0s 		= new TClonesArray("AliAnalysisPIDV0");
+	//*bTracks 	= new TClonesArray("AliAnalysisPIDTrack");
+	//*bV0s 		= new TClonesArray("AliAnalysisPIDV0");
 	mChain->SetBranchAddress("AnalysisTrack",&bTracks);
 	mChain->SetBranchAddress("AnalysisV0Track",&bV0s);
 	mChain->SetBranchAddress("AnalysisEvent",&mEvent);
