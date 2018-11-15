@@ -56,7 +56,7 @@ bool SelectEvent(AliAnalysisPIDEvent* e) {
 	//cout << "ae is " << e->AcceptEvent(1,1) << endl;
 	if (!e->AcceptEvent(1,0)) 				return false;
 	if (bV0s->GetEntriesFast() < 1) 		return false;
-	if (bTrackss->GetEntriesFast() < 1) 	return false;
+	if (bTracks->GetEntriesFast() < 1) 		return false;
 
 	return true; 
 }
