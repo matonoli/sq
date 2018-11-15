@@ -104,6 +104,7 @@ void readTree_V0(Int_t nEvents=10, const Char_t *inputFile="test.list", const Ch
 
 	TH1F* hV0_IMK0s				= new TH1F("hV0_IMK0s","",2000,-1,1);
 	TH1F* hV0_IML				= new TH1F("hV0_IML","",2000,-1,1);
+	TH1F* hV0_IMAL				= new TH1F("hV0_IMAL","",2000,-1,1);
 
 	nEvents = (nEvents < mChain->GetEntries()) ? nEvents : mChain->GetEntries();
 
@@ -134,6 +135,7 @@ void readTree_V0(Int_t nEvents=10, const Char_t *inputFile="test.list", const Ch
 
 			hV0_IMK0s->Fill(v0->GetIMK0s());
 			hV0_IML->Fill(v0->GetIML());
+			hV0_IMAL->Fill(v0->GetIMAL());
 
 			//printf("imko is %f and iml is %f \n",v0->GetIMK0s(),v0->GetIML());
 		}
@@ -157,4 +159,8 @@ void readTree_V0(Int_t nEvents=10, const Char_t *inputFile="test.list", const Ch
 	printf(" WHAT IS UP \n", );
 	//hEventMonitor->Draw();
 	hV0_IMK0s->Draw();
+	new TCanvas;
+	hV0_IML->Draw();
+	new TCanvas;
+	hV0_IMAL->Draw();
 }
