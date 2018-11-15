@@ -54,10 +54,35 @@ bool makeChain(const Char_t *inputFile="test.list") {
 bool SelectEvent(AliAnalysisPIDEvent* e) {
 
 	//cout << "ae is " << e->AcceptEvent(1,1) << endl;
-	if (!e->AcceptEvent(1,0)) 			return false;
-	if (bV0s->GetEntriesFast() < 1) 	return false;
-	return true; 
+	if (!e->AcceptEvent(1,0)) 				return false;
+	if (bV0s->GetEntriesFast() < 1) 		return false;
+	if (bTrackss->GetEntriesFast() < 1) 	return false;
 
+	return true; 
+}
+
+bool SelectV0(AliAnalysisPIDV0* v0) {
+
+	if (fabs(v0->GetEta()) > 0.8) 				return false; //superfluous
+	if (v0->GetPt() < 1.0)						return false;
+	if (v0->GetPt() > 12.0)						return false;
+	//if (v0->GetDCAPV() < 0.05)				return false; // dca of extrapolated v0 to pv? or daughters to pv?
+	if (v0->GetDCAV0Daughters() > 0.5)			return false;
+	if (v0->GetV0CosinePA() < 0.997)			return false; // :(
+	if (v0->GetRadius() < 5.)					return false;
+	if (v0->GetRadius() > 100.)					return false;
+
+	if (!SelectV0daughter(v0->GetPosAnalysisTrack()))	return false;
+	if (!SelectV0daughter(v0->GetNegAnalysisTrack()))	return false;
+
+	return true;
+}
+
+bool SelectV0daughter(AliAnalysisPIDTrack* t) {
+
+	if (fabs(t->GetEta()) > 0.8) return false;
+
+	return true;
 }
 
 void readTree_V0(Int_t nEvents=10, const Char_t *inputFile="test.list", const Char_t *outputFile="test.root") {
@@ -75,6 +100,9 @@ void readTree_V0(Int_t nEvents=10, const Char_t *inputFile="test.list", const Ch
 	mChain->SetBranchAddress("AnalysisEvent",&mEvent);
 
 	TH1F* hEventMonitor			= new TH1F("hEventMonitor","",10,-0.5,9.5);
+	TH1F* hV0Monitor			= new TH1F("hV0Monitor","",10,-0.5,9.5);
+
+	TH1F* hV0_IMK0s				= new TH1F("hV0_IMK0s","",1000,-2,2);
 
 	nEvents = (nEvents < mChain->GetEntries()) ? nEvents : mChain->GetEntries();
 
@@ -83,19 +111,31 @@ void readTree_V0(Int_t nEvents=10, const Char_t *inputFile="test.list", const Ch
 		hEventMonitor->Fill(0);
 		bTracks->Clear();
 		mChain->GetEntry(iEv);
+		if (!mEvent) continue;
+		hEventMonitor->Fill(1);
 		//printf("event vz is %f \n", mEvent->GetVertexZ());
 
 		if (iEv==0) mEvent->PrintEventSelection();
-		//precut histos
 		if (!SelectEvent(mEvent)) continue;
-		//aftercut histos
-		hEventMonitor->Fill(1);
+		hEventMonitor->Fill(2);
 
 		Int_t nV0s = bV0s->GetEntriesFast();
-		printf("nV0s is %i \n", nV0s);
+		//printf("nV0s is %i \n", nV0s);
+		for (int iV0 = 0; iV0 < nV0s; ++iV0)	{
+			
+			hV0Monitor->Fill(0);
+			AliAnalysisPIDV0* v0 = (AliAnalysisPIDV0*)bV0s->At(iV0);
+			if (!v0) continue;
+			hV0Monitor->Fill(1);
+
+			if (!SelectV0(V0)) continue;
+			hV0Monitor->Fill(2);
+
+			hV0_IMK0s->Fill(v0->GetIMK0s());
+		}
 
 		Int_t nTracks = bTracks->GetEntriesFast();
-		printf("nTracks is %i \n", nTracks);
+		//printf("nTracks is %i \n", nTracks);
 		for (int iTr = 0; iTr < nTracks; ++iTr)	{
 			AliAnalysisPIDTrack* track = (AliAnalysisPIDTrack*)bTracks->At(iTr);
 			//printf("pt is %f \n", track->GetPt());
