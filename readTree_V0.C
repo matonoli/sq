@@ -135,7 +135,7 @@ void readTree_V0(Int_t nEvents=10, const Char_t *inputFile="test.list", const Ch
 			hV0_IMK0s->Fill(v0->GetIMK0s());
 			hV0_IML->Fill(v0->GetIML());
 
-			printf("imko is %f and iml is %f \n",v0->GetIMK0s(),v0->GetIML());
+			//printf("imko is %f and iml is %f \n",v0->GetIMK0s(),v0->GetIML());
 		}
 
 		Int_t nTracks = bTracks->GetEntriesFast();
