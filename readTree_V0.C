@@ -49,6 +49,10 @@ bool makeChain(const Char_t *inputFile="test.list") {
 		return false;	}
 }
 
+bool SelectEvent(AliAnalysisPIDEvent* e) {
+
+}
+
 void readTree_V0(Int_t nEvents=10, const Char_t *inputFile="test.list", const Char_t *outputFile="test.root") {
 
 	gROOT->LoadMacro("$HOME/sq/load_libraries.C");
@@ -67,19 +71,20 @@ void readTree_V0(Int_t nEvents=10, const Char_t *inputFile="test.list", const Ch
 		
 		bTracks->Clear();
 		mChain->GetEntry(iEv);
-		printf("event vz is %f \n", mEvent->GetVertexZ());
+		//printf("event vz is %f \n", mEvent->GetVertexZ());
+
+		mEvent->PrintEventSelection();
+		//if (!SelectEvent(mEvent)) continue;
 
 		//precut event histos
 		//select event
 		//aftercut event histos
 
-
-
 		Int_t nTracks = bTracks->GetEntriesFast();
 		printf("nTracks is %i \n", nTracks);
 		for (int iTr = 0; iTr < nTracks; ++iTr)	{
 			AliAnalysisPIDTrack* track = (AliAnalysisPIDTrack*)bTracks->At(iTr);
-			printf("pt is %f \n", track->GetPt());
+			//printf("pt is %f \n", track->GetPt());
 
 			//precut track histos
 			//select track
