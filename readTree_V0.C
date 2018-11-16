@@ -81,6 +81,7 @@ bool SelectV0(AliAnalysisPIDV0* v0) {
 bool SelectV0daughter(AliAnalysisPIDTrack* t) {
 
 	if (fabs(t->GetEta()) > 0.8) return false;
+	//if (fabs(t->Get))
 
 	return true;
 }
@@ -106,9 +107,12 @@ void readTree_V0(Int_t nEvents=10, const Char_t *inputFile="test.list", const Ch
 	TH1F* hV0_IML				= new TH1F("hV0_IML","",2000,-1,1);
 	TH1F* hV0_IMAL				= new TH1F("hV0_IMAL","",2000,-1,1);
 
-	TH2F* hV0_DDTofPiPi			= new TH2F("hV0_DDTofPiPi","",100,-10,10,100,-10,10);
-	TH2F* hV0_DDTofPiP			= new TH2F("hV0_DDTofPiP","",100,-10,10,100,-10,10);
-	TH2F* hV0_DTofPivp			= new TH2F("hV0_DTofPivp","",100,0,10,100,-10,10);
+	TH2F* hV0_DDTofPiPi			= new TH2F("hV0_DDTofPiPi","",300,-15,15,300,-15,15);
+	TH2F* hV0_DDTofPiP			= new TH2F("hV0_DDTofPiP","",300,-15,15,300,-15,15);
+	TH2F* hV0_DTofPivp			= new TH2F("hV0_DTofPivp","",100,0,10,300,-15,15);
+
+	TH2F* hV0_DDDedx			= new TH2F("hV0_DDDedx","",300,0,300,300,0,300);
+	TH2F* hV0_DDedxvp			= new TH2F("hV0_DDedxvp","",100,0,10,300,0,300);
 
 	nEvents = (nEvents < mChain->GetEntries()) ? nEvents : mChain->GetEntries();
 
@@ -140,6 +144,11 @@ void readTree_V0(Int_t nEvents=10, const Char_t *inputFile="test.list", const Ch
 			hV0_DDTofPiPi->Fill(v0->GetPosAnalysisTrack()->GetNSigmaPionTOF(),v0->GetNegAnalysisTrack()->GetNSigmaPionTOF());
 			hV0_DDTofPiP->Fill(v0->GetPosAnalysisTrack()->GetNSigmaPionTOF(),v0->GetNegAnalysisTrack()->GetNSigmaProtonTOF());
 			hV0_DTofPivp->Fill(v0->GetPosAnalysisTrack()->GetP(),v0->GetPosAnalysisTrack()->GetNSigmaPionTOF());
+			hV0_DTofPivp->Fill(v0->GetNegAnalysisTrack()->GetP(),v0->GetNegAnalysisTrack()->GetNSigmaPionTOF());
+
+			hV0_DDDedx->Fill(v0->GetPosAnalysisTrack()->GetTPCdEdx(),v0->GetNegAnalysisTrack()->GetTPCdEdx());
+			hV0_DDedxvp->Fill(v0->GetPosAnalysisTrack()->GetP(),v0->GetPosAnalysisTrack()->GetTPCdEdx());
+			hV0_DDedxvp->Fill(v0->GetNegAnalysisTrack()->GetP(),v0->GetNegAnalysisTrack()->GetTPCdEdx());
 
 			hV0_IMK0s->Fill(v0->GetIMK0s());
 			hV0_IML->Fill(v0->GetIML());
