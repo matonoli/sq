@@ -100,10 +100,10 @@ bool IsK0s(AliAnalysisPIDV0* v0) {
 	AliAnalysisPIDTrack* trP = v0->GetPosAnalysisTrack();
 	AliAnalysisPIDTrack* trN = v0->GetNegAnalysisTrack();
 
-	//if (fabs(trP->GetNSigmaPionTOF())>3.) return false;
-	//if (fabs(trN->GetNSigmaPionTOF())>3.) return false;
-	//if (fabs(trP->GetNSigmaPionTPC())>3.) return false;
-	//if (fabs(trN->GetNSigmaPionTPC())>3.) return false;
+	if (fabs(trP->GetNSigmaPionTOF())>3.) return false;
+	if (fabs(trN->GetNSigmaPionTOF())>3.) return false;
+	if (fabs(trP->GetNSigmaPionTPC())>3.) return false;
+	if (fabs(trN->GetNSigmaPionTPC())>3.) return false;
 
 	return true;
 }
@@ -114,10 +114,10 @@ bool IsL(AliAnalysisPIDV0* v0) {
 	AliAnalysisPIDTrack* trP = v0->GetPosAnalysisTrack();
 	AliAnalysisPIDTrack* trN = v0->GetNegAnalysisTrack();
 
-	//if (fabs(trP->GetNSigmaProtonTOF())>3.) 	return false;
-	//if (fabs(trN->GetNSigmaPionTOF())>3.) 		return false;
-	//if (fabs(trP->GetNSigmaProtonTPC())>3.) 	return false;
-	//if (fabs(trN->GetNSigmaPionTPC())>3.) 		return false;
+	if (fabs(trP->GetNSigmaProtonTOF())>3.) 	return false;
+	if (fabs(trN->GetNSigmaPionTOF())>3.) 		return false;
+	if (fabs(trP->GetNSigmaProtonTPC())>3.) 	return false;
+	if (fabs(trN->GetNSigmaPionTPC())>3.) 		return false;
 
 	return true;
 }
@@ -128,10 +128,10 @@ bool IsAL(AliAnalysisPIDV0* v0) {
 	AliAnalysisPIDTrack* trP = v0->GetPosAnalysisTrack();
 	AliAnalysisPIDTrack* trN = v0->GetNegAnalysisTrack();
 
-	//if (fabs(trP->GetNSigmaPionTOF())>3.) 		return false;
-	//if (fabs(trN->GetNSigmaProtonTOF())>3.) 	return false;
-	//if (fabs(trP->GetNSigmaPionTPC())>3.) 		return false;
-	//if (fabs(trN->GetNSigmaProtonTPC())>3.) 	return false;
+	if (fabs(trP->GetNSigmaPionTOF())>3.) 		return false;
+	if (fabs(trN->GetNSigmaProtonTOF())>3.) 	return false;
+	if (fabs(trP->GetNSigmaPionTPC())>3.) 		return false;
+	if (fabs(trN->GetNSigmaProtonTPC())>3.) 	return false;
 
 	return true;
 }
@@ -250,6 +250,10 @@ void readTree_V0(Int_t nEvents=10, const Char_t *inputFile="test.list", const Ch
 		
 		hV0TrCounter->Fill(V0Count,trCount);
 	}
+
+	hV0_PtK0s->Scale(1,"width");
+	hV0_PtL->Scale(1,"width");
+	hV0_PtAL->Scale(1,"width");
 
 	printf(" WHAT IS UP \n", );
 	//hEventMonitor->Draw();
