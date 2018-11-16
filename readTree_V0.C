@@ -106,9 +106,9 @@ void readTree_V0(Int_t nEvents=10, const Char_t *inputFile="test.list", const Ch
 	TH1F* hV0_IML				= new TH1F("hV0_IML","",2000,-1,1);
 	TH1F* hV0_IMAL				= new TH1F("hV0_IMAL","",2000,-1,1);
 
-	TH2F* hV0_DDTofPiPi			= new TH2F("hV0_DDTofPiPi","",200,-10,10,200,-10,10);
-	TH2F* hV0_DDTofPiP			= new TH2F("hV0_DDTofPiP","",200,-10,10,200,-10,10);
-	TH2F* hV0_DTofPivp			= new TH2F("hV0_DTofPivp","",200,0,10,200,-10,10);
+	TH2F* hV0_DDTofPiPi			= new TH2F("hV0_DDTofPiPi","",100,-10,10,100,-10,10);
+	TH2F* hV0_DDTofPiP			= new TH2F("hV0_DDTofPiP","",100,-10,10,100,-10,10);
+	TH2F* hV0_DTofPivp			= new TH2F("hV0_DTofPivp","",100,0,10,100,-10,10);
 
 	nEvents = (nEvents < mChain->GetEntries()) ? nEvents : mChain->GetEntries();
 
