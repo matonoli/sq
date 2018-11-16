@@ -223,7 +223,7 @@ void readTree_V0(Int_t nEvents=10, const Char_t *inputFile="test.list", const Ch
 			bool noCuts = 0;
 			if (noCuts || IsK0s(v0)) 	{
 				hV0_IMK0s->Fill(v0->GetIMK0s());	
-				hV0_PtK0s->Fill(v0->GetPt()) 		}
+				hV0_PtK0s->Fill(v0->GetPt()); 		}
 			if (noCuts || IsL(v0)) 		{
 				hV0_IML->Fill(v0->GetIML());		
 				hV0_PtL->Fill(v0->GetPt());			}
