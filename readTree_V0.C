@@ -98,7 +98,7 @@ bool SelectTrack(AliAnalysisPIDTrack* t) {
 bool IsK0s(AliAnalysisPIDV0* v0) {
 
 	AliAnalysisPIDTrack* trP = v0->GetPosAnalysisTrack();
-	AliAnalysisPIDTrack* trN = v0->GetNAnalysisTrack();
+	AliAnalysisPIDTrack* trN = v0->GetNegAnalysisTrack();
 
 	if (fabs(trP->GetNSigmaPionTOF())>3.) return false;
 	if (fabs(trN->GetNSigmaPionTOF())>3.) return false;
@@ -112,7 +112,7 @@ bool IsK0s(AliAnalysisPIDV0* v0) {
 bool IsL(AliAnalysisPIDV0* v0) {
 
 	AliAnalysisPIDTrack* trP = v0->GetPosAnalysisTrack();
-	AliAnalysisPIDTrack* trN = v0->GetNAnalysisTrack();
+	AliAnalysisPIDTrack* trN = v0->GetNegAnalysisTrack();
 
 	if (fabs(trP->GetNSigmaProtonTOF())>3.) 	return false;
 	if (fabs(trN->GetNSigmaPionTOF())>3.) 		return false;
@@ -126,7 +126,7 @@ bool IsL(AliAnalysisPIDV0* v0) {
 bool IsAL(AliAnalysisPIDV0* v0) {
 
 	AliAnalysisPIDTrack* trP = v0->GetPosAnalysisTrack();
-	AliAnalysisPIDTrack* trN = v0->GetNAnalysisTrack();
+	AliAnalysisPIDTrack* trN = v0->GetNegAnalysisTrack();
 
 	if (fabs(trP->GetNSigmaPionTOF())>3.) 		return false;
 	if (fabs(trN->GetNSigmaProtonTOF())>3.) 	return false;
