@@ -106,6 +106,10 @@ void readTree_V0(Int_t nEvents=10, const Char_t *inputFile="test.list", const Ch
 	TH1F* hV0_IML				= new TH1F("hV0_IML","",2000,-1,1);
 	TH1F* hV0_IMAL				= new TH1F("hV0_IMAL","",2000,-1,1);
 
+	TH2F* hV0_DDTofPiPi			= new TH2F("hV0_DDTofPiPi","",200,-10,10,200,-10,10);
+	TH2F* hV0_DDTofPiP			= new TH2F("hV0_DDTofPiP","",200,-10,10,200,-10,10);
+	TH2F* hV0_DTofPivp			= new TH2F("hV0_DTofPivp","",200,0,10,200,-10,10);
+
 	nEvents = (nEvents < mChain->GetEntries()) ? nEvents : mChain->GetEntries();
 
 	for (int iEv = 0; iEv < nEvents; ++iEv)	{
@@ -133,6 +137,10 @@ void readTree_V0(Int_t nEvents=10, const Char_t *inputFile="test.list", const Ch
 			if (!SelectV0(v0)) continue;
 			hV0Monitor->Fill(2);
 
+			hV0_DDTofPiPi->Fill(v0->GetPosAnalysisTrack()->GetNSigmaPionTOF(),v0->GetNegAnalysisTrack()->GetNSigmaPionTOF());
+			hV0_DDTofPiP->Fill(v0->GetPosAnalysisTrack()->GetNSigmaPionTOF(),v0->GetNegAnalysisTrack()->GetNSigmaProtonTOF());
+			hV0_DDTofPiP->Fill(v0->GetPosAnalysisTrack()->GetP(),v0->GetPosAnalysisTrack()->GetNSigmaPionTOF());
+
 			hV0_IMK0s->Fill(v0->GetIMK0s());
 			hV0_IML->Fill(v0->GetIML());
 			hV0_IMAL->Fill(v0->GetIMAL());
@@ -158,9 +166,9 @@ void readTree_V0(Int_t nEvents=10, const Char_t *inputFile="test.list", const Ch
 
 	printf(" WHAT IS UP \n", );
 	//hEventMonitor->Draw();
-	hV0_IMK0s->Draw();
+	hV0_DDTofPiP->Draw("colz");
 	new TCanvas;
-	hV0_IML->Draw();
+	hV0_DDTofPiPi->Draw("colz");
 	new TCanvas;
-	hV0_IMAL->Draw();
+	hV0_DTofPivp->Draw("colz");
 }
