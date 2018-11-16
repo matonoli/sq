@@ -100,8 +100,8 @@ bool IsK0s(AliAnalysisPIDV0* v0) {
 	AliAnalysisPIDTrack* trP = v0->GetPosAnalysisTrack();
 	AliAnalysisPIDTrack* trN = v0->GetNegAnalysisTrack();
 
-	if (fabs(trP->GetNSigmaPionTOF())>3.) return false;
-	if (fabs(trN->GetNSigmaPionTOF())>3.) return false;
+	//if (fabs(trP->GetNSigmaPionTOF())>3.) return false;
+	//if (fabs(trN->GetNSigmaPionTOF())>3.) return false;
 	if (fabs(trP->GetNSigmaPionTPC())>3.) return false;
 	if (fabs(trN->GetNSigmaPionTPC())>3.) return false;
 
@@ -114,8 +114,8 @@ bool IsL(AliAnalysisPIDV0* v0) {
 	AliAnalysisPIDTrack* trP = v0->GetPosAnalysisTrack();
 	AliAnalysisPIDTrack* trN = v0->GetNegAnalysisTrack();
 
-	if (fabs(trP->GetNSigmaProtonTOF())>3.) 	return false;
-	if (fabs(trN->GetNSigmaPionTOF())>3.) 		return false;
+	//if (fabs(trP->GetNSigmaProtonTOF())>3.) 	return false;
+	//if (fabs(trN->GetNSigmaPionTOF())>3.) 		return false;
 	if (fabs(trP->GetNSigmaProtonTPC())>3.) 	return false;
 	if (fabs(trN->GetNSigmaPionTPC())>3.) 		return false;
 
@@ -128,8 +128,8 @@ bool IsAL(AliAnalysisPIDV0* v0) {
 	AliAnalysisPIDTrack* trP = v0->GetPosAnalysisTrack();
 	AliAnalysisPIDTrack* trN = v0->GetNegAnalysisTrack();
 
-	if (fabs(trP->GetNSigmaPionTOF())>3.) 		return false;
-	if (fabs(trN->GetNSigmaProtonTOF())>3.) 	return false;
+	//if (fabs(trP->GetNSigmaPionTOF())>3.) 		return false;
+	//if (fabs(trN->GetNSigmaProtonTOF())>3.) 	return false;
 	if (fabs(trP->GetNSigmaPionTPC())>3.) 		return false;
 	if (fabs(trN->GetNSigmaProtonTPC())>3.) 	return false;
 
