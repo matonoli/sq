@@ -75,13 +75,22 @@ bool SelectV0(AliAnalysisPIDV0* v0) {
 	if (!SelectV0daughter(v0->GetPosAnalysisTrack()))	return false;
 	if (!SelectV0daughter(v0->GetNegAnalysisTrack()))	return false;
 
+	// IM photonic e+e- rejection cut?
+
 	return true;
 }
 
 bool SelectV0daughter(AliAnalysisPIDTrack* t) {
 
 	if (fabs(t->GetEta()) > 0.8) return false;
-	//if (fabs(t->Get))
+	if (fabs(t->GetImpactParameter(0)) < 0.05) return false;
+
+	return true;
+}
+
+bool SelectTrack(AliAnalysisPIDTrack* t) {
+
+	if (fabs(t->GetEta()) > 0.8) return false;
 
 	return true;
 }
@@ -102,6 +111,8 @@ void readTree_V0(Int_t nEvents=10, const Char_t *inputFile="test.list", const Ch
 
 	TH1F* hEventMonitor			= new TH1F("hEventMonitor","",10,-0.5,9.5);
 	TH1F* hV0Monitor			= new TH1F("hV0Monitor","",10,-0.5,9.5);
+	TH1F* hTrackMonitor			= new TH1F("hTrackMonitor","",10,-0.5,9.5);
+	TH1F* hV0TrCounter			= new TH1F("hV0TrCounter","",10,-0.5,9.5);
 
 	TH1F* hV0_IMK0s				= new TH1F("hV0_IMK0s","",2000,-1,1);
 	TH1F* hV0_IML				= new TH1F("hV0_IML","",2000,-1,1);
@@ -115,10 +126,10 @@ void readTree_V0(Int_t nEvents=10, const Char_t *inputFile="test.list", const Ch
 	TH2F* hV0_DDedxvp			= new TH2F("hV0_DDedxvp","",100,0,10,300,0,300);
 
 	nEvents = (nEvents < mChain->GetEntries()) ? nEvents : mChain->GetEntries();
-
 	for (int iEv = 0; iEv < nEvents; ++iEv)	{
 		
 		hEventMonitor->Fill(0);
+		if (iEv%100000==0) printf("Processing: %i out of total %i events...\n", iEv, nEvents);
 		bTracks->Clear();
 		mChain->GetEntry(iEv);
 		if (!mEvent) continue;
@@ -129,8 +140,8 @@ void readTree_V0(Int_t nEvents=10, const Char_t *inputFile="test.list", const Ch
 		if (!SelectEvent(mEvent)) continue;
 		hEventMonitor->Fill(2);
 
+		Int_t V0Count = 0; 
 		Int_t nV0s = bV0s->GetEntriesFast();
-		//printf("nV0s is %i \n", nV0s);
 		for (int iV0 = 0; iV0 < nV0s; ++iV0)	{
 			
 			hV0Monitor->Fill(0);
@@ -140,6 +151,7 @@ void readTree_V0(Int_t nEvents=10, const Char_t *inputFile="test.list", const Ch
 
 			if (!SelectV0(v0)) continue;
 			hV0Monitor->Fill(2);
+			V0Count++;
 
 			hV0_DDTofPiPi->Fill(v0->GetPosAnalysisTrack()->GetNSigmaPionTOF(),v0->GetNegAnalysisTrack()->GetNSigmaPionTOF());
 			hV0_DDTofPiP->Fill(v0->GetPosAnalysisTrack()->GetNSigmaPionTOF(),v0->GetNegAnalysisTrack()->GetNSigmaProtonTOF());
@@ -157,20 +169,21 @@ void readTree_V0(Int_t nEvents=10, const Char_t *inputFile="test.list", const Ch
 			//printf("imko is %f and iml is %f \n",v0->GetIMK0s(),v0->GetIML());
 		}
 
+		Int_t trCount = 0;
 		Int_t nTracks = bTracks->GetEntriesFast();
-		//printf("nTracks is %i \n", nTracks);
 		for (int iTr = 0; iTr < nTracks; ++iTr)	{
+			
+			hTrackMonitor->Fill(0);
 			AliAnalysisPIDTrack* track = (AliAnalysisPIDTrack*)bTracks->At(iTr);
-			//printf("pt is %f \n", track->GetPt());
-
-			//precut track histos
-			//select track
-			//aftercut track histos
+			if (!track) continue;
+			hTrackMonitor->Fill(1);
+			
+			if (!SelectTrack(track)) continue;
+			hTrackMonitor->Fill(2);
+			trCount++;
 		}
-
-		//v0loop
-
 		
+		hV0TrCounter->Fill(V0Count,trCount);
 	}
 
 	printf(" WHAT IS UP \n", );
