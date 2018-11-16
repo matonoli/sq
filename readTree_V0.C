@@ -95,6 +95,47 @@ bool SelectTrack(AliAnalysisPIDTrack* t) {
 	return true;
 }
 
+bool IsK0s(AliAnalysisPIDV0* v0) {
+
+	AliAnalysisPIDTrack* trP = v0->GetPosAnalysisTrack();
+	AliAnalysisPIDTrack* trN = v0->GetNAnalysisTrack();
+
+	if (fabs(trP->GetNSigmaPionTOF())>3.) return false;
+	if (fabs(trN->GetNSigmaPionTOF())>3.) return false;
+	if (fabs(trP->GetNSigmaPionTPC())>3.) return false;
+	if (fabs(trN->GetNSigmaPionTPC())>3.) return false;
+
+	return true;
+}
+
+
+bool IsL(AliAnalysisPIDV0* v0) {
+
+	AliAnalysisPIDTrack* trP = v0->GetPosAnalysisTrack();
+	AliAnalysisPIDTrack* trN = v0->GetNAnalysisTrack();
+
+	if (fabs(trP->GetNSigmaProtonTOF())>3.) 	return false;
+	if (fabs(trN->GetNSigmaPionTOF())>3.) 		return false;
+	if (fabs(trP->GetNSigmaProtonTPC())>3.) 	return false;
+	if (fabs(trN->GetNSigmaPionTPC())>3.) 		return false;
+
+	return true;
+}
+
+
+bool IsAL(AliAnalysisPIDV0* v0) {
+
+	AliAnalysisPIDTrack* trP = v0->GetPosAnalysisTrack();
+	AliAnalysisPIDTrack* trN = v0->GetNAnalysisTrack();
+
+	if (fabs(trP->GetNSigmaPionTOF())>3.) 		return false;
+	if (fabs(trN->GetNSigmaProtonTOF())>3.) 	return false;
+	if (fabs(trP->GetNSigmaPionTPC())>3.) 		return false;
+	if (fabs(trN->GetNSigmaProtonTPC())>3.) 	return false;
+
+	return true;
+}
+
 void readTree_V0(Int_t nEvents=10, const Char_t *inputFile="test.list", const Char_t *outputFile="test.root") {
 
 	gROOT->LoadMacro("$HOME/sq/load_libraries.C");
@@ -162,11 +203,13 @@ void readTree_V0(Int_t nEvents=10, const Char_t *inputFile="test.list", const Ch
 			hV0_DDedxvp->Fill(v0->GetPosAnalysisTrack()->GetP(),v0->GetPosAnalysisTrack()->GetTPCdEdx());
 			hV0_DDedxvp->Fill(v0->GetNegAnalysisTrack()->GetP(),v0->GetNegAnalysisTrack()->GetTPCdEdx());
 
-			hV0_IMK0s->Fill(v0->GetIMK0s());
-			hV0_IML->Fill(v0->GetIML());
-			hV0_IMAL->Fill(v0->GetIMAL());
-
-			//printf("imko is %f and iml is %f \n",v0->GetIMK0s(),v0->GetIML());
+			bool noCuts = 0;
+			if (noCuts || IsK0s(v0)) 	{
+				hV0_IMK0s->Fill(v0->GetIMK0s());	}
+			if (noCuts || IsL(v0)) 		{
+				hV0_IML->Fill(v0->GetIML());		}
+			if (noCuts || IsAL(v0)) 	{
+				hV0_IMAL->Fill(v0->GetIMAL());		}
 		}
 
 		Int_t trCount = 0;
@@ -188,9 +231,6 @@ void readTree_V0(Int_t nEvents=10, const Char_t *inputFile="test.list", const Ch
 
 	printf(" WHAT IS UP \n", );
 	//hEventMonitor->Draw();
-	hV0_DDTofPiP->Draw("colz");
+
 	new TCanvas;
-	hV0_DDTofPiPi->Draw("colz");
-	new TCanvas;
-	hV0_DTofPivp->Draw("colz");
 }
