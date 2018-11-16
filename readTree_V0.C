@@ -102,8 +102,8 @@ bool IsK0s(AliAnalysisPIDV0* v0) {
 
 	//if (fabs(trP->GetNSigmaPionTOF())>3.) return false;
 	//if (fabs(trN->GetNSigmaPionTOF())>3.) return false;
-	if (fabs(trP->GetNSigmaPionTPC())>3.) return false;
-	if (fabs(trN->GetNSigmaPionTPC())>3.) return false;
+	//if (fabs(trP->GetNSigmaPionTPC())>3.) return false;
+	//if (fabs(trN->GetNSigmaPionTPC())>3.) return false;
 
 	return true;
 }
@@ -116,8 +116,8 @@ bool IsL(AliAnalysisPIDV0* v0) {
 
 	//if (fabs(trP->GetNSigmaProtonTOF())>3.) 	return false;
 	//if (fabs(trN->GetNSigmaPionTOF())>3.) 		return false;
-	if (fabs(trP->GetNSigmaProtonTPC())>3.) 	return false;
-	if (fabs(trN->GetNSigmaPionTPC())>3.) 		return false;
+	//if (fabs(trP->GetNSigmaProtonTPC())>3.) 	return false;
+	//if (fabs(trN->GetNSigmaPionTPC())>3.) 		return false;
 
 	return true;
 }
@@ -130,8 +130,8 @@ bool IsAL(AliAnalysisPIDV0* v0) {
 
 	//if (fabs(trP->GetNSigmaPionTOF())>3.) 		return false;
 	//if (fabs(trN->GetNSigmaProtonTOF())>3.) 	return false;
-	if (fabs(trP->GetNSigmaPionTPC())>3.) 		return false;
-	if (fabs(trN->GetNSigmaProtonTPC())>3.) 	return false;
+	//if (fabs(trP->GetNSigmaPionTPC())>3.) 		return false;
+	//if (fabs(trN->GetNSigmaProtonTPC())>3.) 	return false;
 
 	return true;
 }
@@ -177,6 +177,7 @@ void readTree_V0(Int_t nEvents=10, const Char_t *inputFile="test.list", const Ch
 	hV0_IMAL->Sumw2();
 	hV0_PtAL->Sumw2();
 
+	TH1F* hV0_DPt 				= new TH1F("hV0_DPt","",200,0,10);
 	TH2F* hV0_DDTofPiPi			= new TH2F("hV0_DDTofPiPi","",300,-15,15,300,-15,15);
 	TH2F* hV0_DDTofPiP			= new TH2F("hV0_DDTofPiP","",300,-15,15,300,-15,15);
 	TH2F* hV0_DTofPivp			= new TH2F("hV0_DTofPivp","",100,0,10,300,-15,15);
@@ -211,11 +212,12 @@ void readTree_V0(Int_t nEvents=10, const Char_t *inputFile="test.list", const Ch
 			hV0Monitor->Fill(2);
 			V0Count++;
 
+			hV0_DPt->Fill(v0->GetPosAnalysisTrack()->GetPt();)
+			hV0_DPt->Fill(v0->GetNegAnalysisTrack()->GetPt();)
 			hV0_DDTofPiPi->Fill(v0->GetPosAnalysisTrack()->GetNSigmaPionTOF(),v0->GetNegAnalysisTrack()->GetNSigmaPionTOF());
 			hV0_DDTofPiP->Fill(v0->GetPosAnalysisTrack()->GetNSigmaPionTOF(),v0->GetNegAnalysisTrack()->GetNSigmaProtonTOF());
 			hV0_DTofPivp->Fill(v0->GetPosAnalysisTrack()->GetP(),v0->GetPosAnalysisTrack()->GetNSigmaPionTOF());
 			hV0_DTofPivp->Fill(v0->GetNegAnalysisTrack()->GetP(),v0->GetNegAnalysisTrack()->GetNSigmaPionTOF());
-
 			hV0_DDDedx->Fill(v0->GetPosAnalysisTrack()->GetTPCdEdx(),v0->GetNegAnalysisTrack()->GetTPCdEdx());
 			hV0_DDedxvp->Fill(v0->GetPosAnalysisTrack()->GetP(),v0->GetPosAnalysisTrack()->GetTPCdEdx());
 			hV0_DDedxvp->Fill(v0->GetNegAnalysisTrack()->GetP(),v0->GetNegAnalysisTrack()->GetTPCdEdx());
