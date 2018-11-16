@@ -112,7 +112,7 @@ void readTree_V0(Int_t nEvents=10, const Char_t *inputFile="test.list", const Ch
 	TH1F* hEventMonitor			= new TH1F("hEventMonitor","",10,-0.5,9.5);
 	TH1F* hV0Monitor			= new TH1F("hV0Monitor","",10,-0.5,9.5);
 	TH1F* hTrackMonitor			= new TH1F("hTrackMonitor","",10,-0.5,9.5);
-	TH1F* hV0TrCounter			= new TH1F("hV0TrCounter","",10,-0.5,9.5);
+	TH2F* hV0TrCounter			= new TH2F("hV0TrCounter","",10,-0.5,9.5);
 
 	TH1F* hV0_IMK0s				= new TH1F("hV0_IMK0s","",2000,-1,1);
 	TH1F* hV0_IML				= new TH1F("hV0_IML","",2000,-1,1);
