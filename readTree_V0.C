@@ -140,8 +140,8 @@ bool IsAL(AliAnalysisPIDV0* v0, Int_t cutFlag) {
 Float_t ExtractYield(TH1D* hist) {	// extracting with RooFit
 	Float_t val = hist->Integral(0,-1);
 	
-	Float_t fitMin = -0.2, fitMax = 0.2;
-	hist->Rebin(4);
+	Float_t fitMin = -0.1, fitMax = 0.1;
+	hist->Rebin(16);
 	RooRealVar MassDT("MassDT","#Delta m_{inv} (GeV/#it{c}^{2})",fitMin,fitMax);
 	RooDataHist DT_hist("DT_hist","DT_hist",MassDT,Import(*hist));
 
