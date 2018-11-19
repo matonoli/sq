@@ -1,0 +1,23 @@
+# timestamp | duration | file | instruction | dir | modtime | etag | size | fileId | status | errorString | http result code | other size | other modtime | X-Request-ID
+#=#=#=# Syncrun started 2018-11-19T16:09:26Z
+#=#=#=#=# Propagation starts 2018-11-19T16:09:26Z (last step: 110 msec, total: 110 msec)
+16:09:26||README.md|INST_NEW|Up|1542123170|4458ce05b79e813d98df5199b8f4ce9e|17|07106436ocrnew9opbpy|4||201|0|0|9f0bcaf4-ca89-4d79-a35f-e2b257a8d996|
+16:09:26||readTree_V0.C|INST_NEW|Up|1542642046|0da432c45b4c3741da810a5160dfc315|10413|07106435ocrnew9opbpy|4||201|0|0|eba6febb-13d9-4e54-9223-567edf7893df|
+16:09:26||hi.txt|INST_NEW|Up|1542200447|614a2b7a017113f12211d4717aa73147|5|07106437ocrnew9opbpy|4||201|0|0|828b9105-f58d-42d2-8528-c48492f8086f|
+16:09:26||load_libraries.C|INST_NEW|Up|1542201488|176c05dea6a29449574263d513576f2d|396|07106438ocrnew9opbpy|4||201|0|0|8d564358-ba2c-4989-819b-f14eb03dfcda|
+#=#=#=# Syncrun finished 2018-11-19T16:11:07Z (last step: 101162 msec, total: 101272 msec)
+#=#=#=# Syncrun started 2018-11-19T16:11:23Z
+#=#=#=#=# Propagation starts 2018-11-19T16:11:24Z (last step: 130 msec, total: 130 msec)
+16:12:06||AnalysisResults.root|INST_NEW|Up|1542205163||5719092452||2|Server replied "500 Internal Server Error" to "PUT https://cloud.lucas.lu.se/remote.php/webdav/della-sq/AnalysisResults.root-chunking-884868075-572-571"|500|0|0|492c4a9c-7326-4d25-a519-d96fecb818d9|
+#=#=#=# Syncrun finished 2018-11-19T16:12:30Z (last step: 66087 msec, total: 66218 msec)
+#=#=#=# Syncrun started 2018-11-19T16:13:10Z
+#=#=#=#=# Propagation starts 2018-11-19T16:13:11Z (last step: 133 msec, total: 133 msec)
+16:15:40||AnalysisResults.root|INST_NEW|Up|1542205163||5719092452||2|Server replied "500 Internal Server Error" to "PUT https://cloud.lucas.lu.se/remote.php/webdav/della-sq/AnalysisResults.root-chunking-884868075-572-196"|500|0|0|52b9c2a3-0db1-4e31-8994-d9f089cb9e47|
+#=#=#=# Syncrun finished 2018-11-19T16:16:06Z (last step: 175940 msec, total: 176073 msec)
+#=#=#=# Syncrun started 2018-11-19T16:16:27Z
+#=#=#=#=# Propagation starts 2018-11-19T16:16:28Z (last step: 122 msec, total: 122 msec)
+#=#=#=# Syncrun finished 2018-11-19T16:16:28Z (last step: 14 msec, total: 136 msec)
+#=#=#=# Syncrun started 2018-11-19T16:17:00Z
+#=#=#=#=# Propagation starts 2018-11-19T16:17:00Z (last step: 132 msec, total: 132 msec)
+16:19:14||AnalysisResults.root|INST_NEW|Up|1542205163||5719092452||2|Server replied "500 Internal Server Error" to "PUT https://cloud.lucas.lu.se/remote.php/webdav/della-sq/AnalysisResults.root-chunking-1574806563-572-571"|500|0|0|f23d9bfe-738a-4fc1-8c0c-90b42ddc70a9|
+#=#=#=# Syncrun finished 2018-11-19T16:19:34Z (last step: 153992 msec, total: 154125 msec)
