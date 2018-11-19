@@ -280,10 +280,10 @@ void readTree_V0(Int_t nEvents=10, Int_t cutFlag=0, const Char_t *inputFile="tes
 
 	for (int iBin = 0; iBin < nPtBins; ++iBin)
 	{
-		hYieldK0s->SetBinContent(iBin+1,ExtractYield(hV0_IMPtK0s->ProjectionX("x",iBin,iBin)));
+		hYieldK0s->SetBinContent(iBin,ExtractYield(hV0_IMPtK0s->ProjectionX("x",iBin,iBin)));
 	}
 
-	hV0_PtK0s->Scale(1,"width");
+	//hV0_PtK0s->Scale(1,"width");
 	hV0_PtL->Scale(1,"width");
 	hV0_PtAL->Scale(1,"width");
 	hV0_DHasTPC->Divide(hV0_DPt);
