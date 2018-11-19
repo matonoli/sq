@@ -161,11 +161,14 @@ Float_t ExtractYield(TH1D* hist) {	// extracting with RooFit
 
 
 	TCanvas* can1 = new TCanvas("can1","",700,700);
+	can1->cd();
 	RooPlot* plot1 = MassDT.frame(Title(" "));
 	DT_hist.plotOn(plot1);
 	fTotal.plotOn(plot1);
 	plot1->SetMinimum(1e-05);
 	plot1->Draw();
+
+	val = (nGaus1+nGaus2);
 
 	return val;
 }
@@ -308,18 +311,18 @@ void readTree_V0(Int_t nEvents=10, Int_t cutFlag=0, const Char_t *inputFile="tes
 	}
 
 
-	ExtractYield((TH1D*)hV0_IMK0s);
+	//ExtractYield((TH1D*)hV0_IMK0s);
 	for (int iBin = 0; iBin < nPtBins; ++iBin)
 	{
-		if (iBin!= 27) continue;
-		//hYieldK0s->SetBinContent(iBin,ExtractYield(hV0_IMPtK0s->ProjectionX("x",iBin,iBin)));
-		//hYieldL->SetBinContent(iBin,ExtractYield(hV0_IMPtL->ProjectionX("x",iBin,iBin)));
-		//hYieldAL->SetBinContent(iBin,ExtractYield(hV0_IMPtAL->ProjectionX("x",iBin,iBin)));
+		//if (iBin!= 27) continue;
+		hYieldK0s->SetBinContent(iBin,ExtractYield(hV0_IMPtK0s->ProjectionX("x",iBin,iBin)));
+		hYieldL->SetBinContent(iBin,ExtractYield(hV0_IMPtL->ProjectionX("x",iBin,iBin)));
+		hYieldAL->SetBinContent(iBin,ExtractYield(hV0_IMPtAL->ProjectionX("x",iBin,iBin)));
 	}
 
 	//hV0_PtK0s->Scale(1,"width");
-	hV0_PtL->Scale(1,"width");
-	hV0_PtAL->Scale(1,"width");
+	//hV0_PtL->Scale(1,"width");
+	//hV0_PtAL->Scale(1,"width");
 	hV0_DHasTPC->Divide(hV0_DPt);
 	hV0_DHasTOF->Divide(hV0_DPt);
 
