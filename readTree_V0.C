@@ -145,12 +145,12 @@ Float_t ExtractYield(TH1D* hist) {	// extracting with RooFit
 	RooRealVar MassDT("MassDT","#Delta m_{inv} (GeV/#it{c}^{2})",fitMin,fitMax);
 	RooDataHist DT_hist("DT_hist","DT_hist",MassDT,Import(*hist));
 
-	RooRealVar pGaus1A("pGaus1A","Mean 1",-0.05,0.05);
+	RooRealVar pGaus1A("pGaus1A","Mean 1",-0.001,0.001);
 	RooRealVar pGaus1B("pGaus1B","Sigma 1",0,0.1);
 	RooGaussian fGaus1("fGaus1","fGaus1",MassDT,pGaus1A,pGaus1B); 
 	RooRealVar nGaus1("nGaus1","N_{Gaus1}",1,0,1e06);
 
-	RooRealVar pGaus2A("pGaus2A","Mean 2",-0.05,0.05);
+	RooRealVar pGaus2A("pGaus2A","Mean 2",-0.001,0.001);
 	RooRealVar pGaus2B("pGaus2B","Sigma 2",0,0.1);
 	RooGaussian fGaus2("fGaus2","fGaus2",MassDT,pGaus2A,pGaus2B); 
 	RooRealVar nGaus2("nGaus2","N_{Gaus2}",1,0,1e06);
@@ -192,13 +192,18 @@ void readTree_V0(Int_t nEvents=10, Int_t cutFlag=0, const Char_t *inputFile="tes
 	mChain->SetBranchAddress("AnalysisV0Track",&bV0s);
 	mChain->SetBranchAddress("AnalysisEvent",&mEvent);
 
-	const Int_t nPtBins = 59;
+	/*const Int_t nPtBins = 59;
   	Double_t xBins[nPtBins+1] = { 0.01, 0.10, 0.12, 0.14, 0.16, 0.18, 0.20, 0.25, 0.30, 0.35, 
     	0.40, 0.45, 0.50, 0.55, 0.60, 0.65, 0.70, 0.75, 0.80, 0.85, 
     	0.90, 0.95, 1.00, 1.10, 1.20, 1.30, 1.40, 1.50, 1.60, 1.70, 
     	1.80, 1.90, 2.00, 2.20, 2.40, 2.60, 2.80, 3.00, 3.20, 3.40, 
     	3.60, 3.80, 4.00, 4.50, 5.00, 5.50, 6.00, 6.50, 7.00, 8.00, 
-    	9.00, 10.00, 11.00, 12.00, 13.00, 14.00, 15.00, 16.00, 18.00, 20.00 };
+    	9.00, 10.00, 11.00, 12.00, 13.00, 14.00, 15.00, 16.00, 18.00, 20.00 };*/
+	const Int_t nPtBins = 35;
+  	Double_t xBins[nPtBins+1] = { 0.90, 0.95, 1.00, 1.10, 1.20, 1.30, 1.40, 1.50, 1.60, 1.70, 
+    	1.80, 1.90, 2.00, 2.20, 2.40, 2.60, 2.80, 3.00, 3.20, 3.40, 
+    	3.60, 3.80, 4.00, 4.50, 5.00, 5.50, 6.00, 6.50, 7.00, 8.00, 
+    	9.00, 10.00, 11.00, 12.00, 13.00, 14.00 }; 
 
 
 	TH1F* hEventMonitor			= new TH1F("hEventMonitor","",10,-0.5,9.5);
