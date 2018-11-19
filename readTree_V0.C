@@ -136,7 +136,8 @@ bool IsAL(AliAnalysisPIDV0* v0) {
 	return true;
 }
 
-void readTree_V0(Int_t nEvents=10, const Char_t *inputFile="test.list", const Char_t *outputFile="test.root") {
+//cutflag: 0 is tpc+tof (no bg), 1 is tpc (+bg), 2 is bg
+void readTree_V0(Int_t nEvents=10, Int_t cutFlag=0, const Char_t *inputFile="test.list", const Char_t *outputFile="test.root") {
 
 	gROOT->LoadMacro("$HOME/sq/load_libraries.C");
 	load_libraries();
@@ -177,6 +178,8 @@ void readTree_V0(Int_t nEvents=10, const Char_t *inputFile="test.list", const Ch
 	hV0_IMAL->Sumw2();
 	hV0_PtAL->Sumw2();
 
+	TH1F* hV0_DHasTPC			= new TH1F("hV0_DHasTPC","",200,0,10);
+	TH1F* hV0_DHasTOF			= new TH1F("hV0_DHasTOF","",200,0,10);
 	TH1F* hV0_DPt 				= new TH1F("hV0_DPt","",200,0,10);
 	TH2F* hV0_DDTofPiPi			= new TH2F("hV0_DDTofPiPi","",300,-15,15,300,-15,15);
 	TH2F* hV0_DDTofPiP			= new TH2F("hV0_DDTofPiP","",300,-15,15,300,-15,15);
@@ -212,6 +215,10 @@ void readTree_V0(Int_t nEvents=10, const Char_t *inputFile="test.list", const Ch
 			hV0Monitor->Fill(2);
 			V0Count++;
 
+			if (v0->GetPosAnalysisTrack()->HasTPCPID()) hV0_DHasTPC->Fill(v0->GetPosAnalysisTrack()->GetPt());
+			if (v0->GetNegAnalysisTrack()->HasTPCPID()) hV0_DHasTPC->Fill(v0->GetNegAnalysisTrack()->GetPt());
+			if (v0->GetPosAnalysisTrack()->HasTOFPID()) hV0_DHasTPC->Fill(v0->GetPosAnalysisTrack()->GetPt());
+			if (v0->GetNegAnalysisTrack()->HasTOFPID()) hV0_DHasTPC->Fill(v0->GetNegAnalysisTrack()->GetPt());
 			hV0_DPt->Fill(v0->GetPosAnalysisTrack()->GetPt());
 			hV0_DPt->Fill(v0->GetNegAnalysisTrack()->GetPt());
 			hV0_DDTofPiPi->Fill(v0->GetPosAnalysisTrack()->GetNSigmaPionTOF(),v0->GetNegAnalysisTrack()->GetNSigmaPionTOF());
@@ -254,6 +261,8 @@ void readTree_V0(Int_t nEvents=10, const Char_t *inputFile="test.list", const Ch
 	hV0_PtK0s->Scale(1,"width");
 	hV0_PtL->Scale(1,"width");
 	hV0_PtAL->Scale(1,"width");
+	hV0_DHasTPC->Divide(hV0_DPt);
+	hV0_DHasTOF->Divide(hV0_DPt);
 
 	printf(" WHAT IS UP \n", );
 	//hEventMonitor->Draw();
