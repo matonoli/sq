@@ -95,45 +95,50 @@ bool SelectTrack(AliAnalysisPIDTrack* t) {
 	return true;
 }
 
-bool IsK0s(AliAnalysisPIDV0* v0) {
+bool IsK0s(AliAnalysisPIDV0* v0, Int_t cutFlag) {
 
 	AliAnalysisPIDTrack* trP = v0->GetPosAnalysisTrack();
 	AliAnalysisPIDTrack* trN = v0->GetNegAnalysisTrack();
 
-	if (fabs(trP->GetNSigmaPionTOF())>3.) return false;
-	if (fabs(trN->GetNSigmaPionTOF())>3.) return false;
-	if (fabs(trP->GetNSigmaPionTPC())>3.) return false;
-	if (fabs(trN->GetNSigmaPionTPC())>3.) return false;
+	if ((cutFlag<1) && fabs(trP->GetNSigmaPionTOF())>3.) return false;
+	if ((cutFlag<1) && fabs(trN->GetNSigmaPionTOF())>3.) return false;
+	if ((cutFlag<2) && fabs(trP->GetNSigmaPionTPC())>3.) return false;
+	if ((cutFlag<2) && fabs(trN->GetNSigmaPionTPC())>3.) return false;
 
 	return true;
 }
 
 
-bool IsL(AliAnalysisPIDV0* v0) {
+bool IsL(AliAnalysisPIDV0* v0, Int_t cutFlag) {
 
 	AliAnalysisPIDTrack* trP = v0->GetPosAnalysisTrack();
 	AliAnalysisPIDTrack* trN = v0->GetNegAnalysisTrack();
 
-	if (fabs(trP->GetNSigmaProtonTOF())>3.) 	return false;
-	if (fabs(trN->GetNSigmaPionTOF())>3.) 		return false;
-	if (fabs(trP->GetNSigmaProtonTPC())>3.) 	return false;
-	if (fabs(trN->GetNSigmaPionTPC())>3.) 		return false;
+	if ((cutFlag<1) && fabs(trP->GetNSigmaProtonTOF())>3.) 	return false;
+	if ((cutFlag<1) && fabs(trN->GetNSigmaPionTOF())>3.) 	return false;
+	if ((cutFlag<2) && fabs(trP->GetNSigmaProtonTPC())>3.) 	return false;
+	if ((cutFlag<2) && fabs(trN->GetNSigmaPionTPC())>3.) 	return false;
 
 	return true;
 }
 
 
-bool IsAL(AliAnalysisPIDV0* v0) {
+bool IsAL(AliAnalysisPIDV0* v0, Int_t cutFlag) {
 
 	AliAnalysisPIDTrack* trP = v0->GetPosAnalysisTrack();
 	AliAnalysisPIDTrack* trN = v0->GetNegAnalysisTrack();
 
-	if (fabs(trP->GetNSigmaPionTOF())>3.) 		return false;
-	if (fabs(trN->GetNSigmaProtonTOF())>3.) 	return false;
-	if (fabs(trP->GetNSigmaPionTPC())>3.) 		return false;
-	if (fabs(trN->GetNSigmaProtonTPC())>3.) 	return false;
+	if ((cutFlag<1) && fabs(trP->GetNSigmaPionTOF())>3.) 	return false;
+	if ((cutFlag<1) && fabs(trN->GetNSigmaProtonTOF())>3.) 	return false;
+	if ((cutFlag<2) && fabs(trP->GetNSigmaPionTPC())>3.) 	return false;
+	if ((cutFlag<2) && fabs(trN->GetNSigmaProtonTPC())>3.) 	return false;
 
 	return true;
+}
+
+Float_t ExtractYield(TH1F* hist) {
+	Float_t val = hist->Integral();
+	return val;
 }
 
 //cutflag: 0 is tpc+tof (no bg), 1 is tpc (+bg), 2 is bg
@@ -167,19 +172,30 @@ void readTree_V0(Int_t nEvents=10, Int_t cutFlag=0, const Char_t *inputFile="tes
 
 	TH1F* hV0_IMK0s				= new TH1F("hV0_IMK0s","",2000,-0.2,0.2);
 	TH1F* hV0_PtK0s				= new TH1F("hV0_PtK0s","",nPtBins,xBins);
+	TH2F* hV0_IMPtK0s			= new TH2F("hV0_IMPtK0s","",2000,-0.2,0.2,nPtBins,xBins);
+	TH1F* hYieldK0s				= new TH1F("hYieldK0s","",nPtBins,xBins);
 	TH1F* hV0_IML				= new TH1F("hV0_IML","",2000,-0.2,0.2);
 	TH1F* hV0_PtL				= new TH1F("hV0_PtL","",nPtBins,xBins);
+	TH2F* hV0_IMPtL				= new TH2F("hV0_IMPtL","",2000,-0.2,0.2,nPtBins,xBins);
+	TH1F* hYieldL				= new TH1F("hYieldL","",nPtBins,xBins);
 	TH1F* hV0_IMAL				= new TH1F("hV0_IMAL","",2000,-0.2,0.2);
 	TH1F* hV0_PtAL				= new TH1F("hV0_PtAL","",nPtBins,xBins);
+	TH2F* hV0_IMPtAL			= new TH2F("hV0_IMPtAL","",2000,-0.2,0.2,nPtBins,xBins);
+	TH1F* hYieldAL				= new TH1F("hYieldAL","",nPtBins,xBins);
 	hV0_IMK0s->Sumw2();
 	hV0_PtK0s->Sumw2();
+	hYieldK0s->Sumw2();
 	hV0_IML->Sumw2();
 	hV0_PtL->Sumw2();
+	hYieldL->Sumw2();
 	hV0_IMAL->Sumw2();
 	hV0_PtAL->Sumw2();
+	hYieldAL->Sumw2();
 
 	TH1F* hV0_DHasTPC			= new TH1F("hV0_DHasTPC","",200,0,10);
+	hV0_DHasTPC->Sumw2();
 	TH1F* hV0_DHasTOF			= new TH1F("hV0_DHasTOF","",200,0,10);
+	hV0_DHasTOF->Sumw2();
 	TH1F* hV0_DPt 				= new TH1F("hV0_DPt","",200,0,10);
 	TH2F* hV0_DDTofPiPi			= new TH2F("hV0_DDTofPiPi","",300,-15,15,300,-15,15);
 	TH2F* hV0_DDTofPiP			= new TH2F("hV0_DDTofPiP","",300,-15,15,300,-15,15);
@@ -229,16 +245,20 @@ void readTree_V0(Int_t nEvents=10, Int_t cutFlag=0, const Char_t *inputFile="tes
 			hV0_DDedxvp->Fill(v0->GetPosAnalysisTrack()->GetP(),v0->GetPosAnalysisTrack()->GetTPCdEdx());
 			hV0_DDedxvp->Fill(v0->GetNegAnalysisTrack()->GetP(),v0->GetNegAnalysisTrack()->GetTPCdEdx());
 
+
 			bool noCuts = 0;
-			if (noCuts || IsK0s(v0)) 	{
+			if (noCuts || IsK0s(v0,cutFlag)) 	{
 				hV0_IMK0s->Fill(v0->GetIMK0s());	
-				hV0_PtK0s->Fill(v0->GetPt()); 		}
-			if (noCuts || IsL(v0)) 		{
+				hV0_PtK0s->Fill(v0->GetPt());
+				hV0_IMPtK0s->Fill(v0->GetIMK0s(),v0->GetPt()); 		}
+			if (noCuts || IsL(v0,cutFlag)) 		{
 				hV0_IML->Fill(v0->GetIML());		
-				hV0_PtL->Fill(v0->GetPt());			}
-			if (noCuts || IsAL(v0)) 	{
+				hV0_PtL->Fill(v0->GetPt());
+				hV0_IMPtL->Fill(v0->GetIML(),v0->GetPt());			}
+			if (noCuts || IsAL(v0,cutFlag)) 	{
 				hV0_IMAL->Fill(v0->GetIMAL());
-				hV0_PtAL->Fill(v0->GetPt());		}
+				hV0_PtAL->Fill(v0->GetPt());
+				hV0_IMPtAL->Fill(v0->GetIMAL(),v0->GetPt());		}
 		}
 
 		Int_t trCount = 0;
@@ -256,6 +276,11 @@ void readTree_V0(Int_t nEvents=10, Int_t cutFlag=0, const Char_t *inputFile="tes
 		}
 		
 		hV0TrCounter->Fill(V0Count,trCount);
+	}
+
+	for (int iBin = 0; iBin < nPtBins; ++iBin)
+	{
+		hYieldK0s->SetBinContent(iBin+1,ExtractYield(hV0_IMPtK0s->ProjectionY("y",iBin,iBin+1)));
 	}
 
 	hV0_PtK0s->Scale(1,"width");
