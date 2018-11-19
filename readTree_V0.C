@@ -168,7 +168,7 @@ Float_t ExtractYield(TH1D* hist) {	// extracting with RooFit
 	plot1->SetMinimum(1e-05);
 	plot1->Draw();
 
-	val = (nGaus1+nGaus2);
+	val = (nGaus1.getVal()+nGaus2.getVal());
 
 	return val;
 }
