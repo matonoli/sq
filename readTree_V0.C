@@ -315,10 +315,10 @@ void readTree_V0(Int_t nEvents=10, Int_t cutFlag=0, const Char_t *inputFile="tes
 	}
 
 
-	//ExtractYield((TH1D*)hV0_IMK0s);
+	ExtractYield((TH1D*)hV0_IMK0s);
 	for (int iBin = 0; iBin < nPtBins; ++iBin)
 	{
-		//if (iBin!= 27) continue;
+		if (iBin!= 279) continue;
 		hYieldK0s->SetBinContent(iBin,ExtractYield(hV0_IMPtK0s->ProjectionX("x",iBin,iBin)));
 		hYieldL->SetBinContent(iBin,ExtractYield(hV0_IMPtL->ProjectionX("x",iBin,iBin)));
 		hYieldAL->SetBinContent(iBin,ExtractYield(hV0_IMPtAL->ProjectionX("x",iBin,iBin)));
@@ -326,7 +326,7 @@ void readTree_V0(Int_t nEvents=10, Int_t cutFlag=0, const Char_t *inputFile="tes
 
 	hV0_PtK0s->Scale(1,"width");
 	hV0_PtL->Scale(1,"width");
-	hV0_PtAL->Scale(1,"width")
+	hV0_PtAL->Scale(1,"width");
 	hYieldK0s->Scale(1,"width");
 	hYieldL->Scale(1,"width");
 	hYieldAL->Scale(1,"width");
