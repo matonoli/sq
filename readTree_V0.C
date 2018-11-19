@@ -141,6 +141,7 @@ Float_t ExtractYield(TH1D* hist) {	// extracting with RooFit
 	Float_t val = hist->Integral(0,-1);
 	
 	Float_t fitMin = -0.2, fitMax = 0.2;
+	hist->Rebin(4);
 	RooRealVar MassDT("MassDT","#Delta m_{inv} (GeV/#it{c}^{2})",fitMin,fitMax);
 	RooDataHist DT_hist("DT_hist","DT_hist",MassDT,Import(*hist));
 
@@ -158,6 +159,7 @@ Float_t ExtractYield(TH1D* hist) {	// extracting with RooFit
 	RooPlot* plot1 = MassDT.frame(Title(" "));
 	DT_hist.plotOn(plot1);
 	fTotal.plotOn(plot1);
+	plot1->SetMinimum(1e-05);
 	plot1->Draw();
 
 	return val;
