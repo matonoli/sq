@@ -137,7 +137,7 @@ bool IsAL(AliAnalysisPIDV0* v0, Int_t cutFlag) {
 }
 
 Float_t ExtractYield(TH1D* hist) {
-	Float_t val = hist->Integral();
+	Float_t val = hist->Integral(0,-1);
 	return val;
 }
 
