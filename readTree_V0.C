@@ -146,11 +146,16 @@ Float_t ExtractYield(TH1D* hist) {	// extracting with RooFit
 	RooDataHist DT_hist("DT_hist","DT_hist",MassDT,Import(*hist));
 
 	RooRealVar pGaus1A("pGaus1A","Mean 1",-0.05,0.05);
-	RooRealVar pGaus1B("pGaus1B","Sigma 1",0,0.5);
+	RooRealVar pGaus1B("pGaus1B","Sigma 1",0,0.1);
 	RooGaussian fGaus1("fGaus1","fGaus1",MassDT,pGaus1A,pGaus1B); 
 	RooRealVar nGaus1("nGaus1","N_{Gaus1}",1,0,1e06);
 
-	RooAddPdf fTotal("fTotal","fTotal",RooArgList(fGaus1),RooArgList(nGaus1));
+	RooRealVar pGaus2A("pGaus2A","Mean 2",-0.05,0.05);
+	RooRealVar pGaus2B("pGaus2B","Sigma 2",0,0.1);
+	RooGaussian fGaus2("fGaus2","fGaus2",MassDT,pGaus2A,pGaus2B); 
+	RooRealVar nGaus2("nGaus2","N_{Gaus2}",1,0,1e06);
+
+	RooAddPdf fTotal("fTotal","fTotal",RooArgList(fGaus1,fGaus2),RooArgList(nGaus1,nGaus2));
 	//RooAddPdf fTotal("fTotal","fTotal",RooArgList(fGaus1,fGaus2,fPolBg),RooArgList(nGaus1,nGaus2,nPolBg));
 	fTotal.fitTo(DT_hist);
 
