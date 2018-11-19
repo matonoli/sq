@@ -281,6 +281,8 @@ void readTree_V0(Int_t nEvents=10, Int_t cutFlag=0, const Char_t *inputFile="tes
 	for (int iBin = 0; iBin < nPtBins; ++iBin)
 	{
 		hYieldK0s->SetBinContent(iBin,ExtractYield(hV0_IMPtK0s->ProjectionX("x",iBin,iBin)));
+		hYieldL->SetBinContent(iBin,ExtractYield(hV0_IMPtL->ProjectionX("x",iBin,iBin)));
+		hYieldAL->SetBinContent(iBin,ExtractYield(hV0_IMPtAL->ProjectionX("x",iBin,iBin)));
 	}
 
 	//hV0_PtK0s->Scale(1,"width");
