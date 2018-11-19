@@ -307,10 +307,12 @@ void readTree_V0(Int_t nEvents=10, Int_t cutFlag=0, const Char_t *inputFile="tes
 		hV0TrCounter->Fill(V0Count,trCount);
 	}
 
+
+	ExtractYield(hV0_IMK0s);
 	for (int iBin = 0; iBin < nPtBins; ++iBin)
 	{
 		if (iBin!= 27) continue;
-		hYieldK0s->SetBinContent(iBin,ExtractYield(hV0_IMPtK0s->ProjectionX("x",iBin,iBin)));
+		//hYieldK0s->SetBinContent(iBin,ExtractYield(hV0_IMPtK0s->ProjectionX("x",iBin,iBin)));
 		//hYieldL->SetBinContent(iBin,ExtractYield(hV0_IMPtL->ProjectionX("x",iBin,iBin)));
 		//hYieldAL->SetBinContent(iBin,ExtractYield(hV0_IMPtAL->ProjectionX("x",iBin,iBin)));
 	}
