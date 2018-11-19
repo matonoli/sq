@@ -136,9 +136,29 @@ bool IsAL(AliAnalysisPIDV0* v0, Int_t cutFlag) {
 	return true;
 }
 
-Float_t ExtractYield(TH1D* hist) {
+Float_t ExtractYield(TH1D* hist) {	// extracting with RooFit
 	Float_t val = hist->Integral(0,-1);
-	RooRealVar w("w","w",-2,2);
+	
+	Float_t fitMin = -0.2, fitMax = 0.2;
+	RooRealVar MassDT("MassDT","#Delta m_{inv} (GeV/#it{c}^{2})",fitMin,fitMax);
+	RooDataHist DT_hist("DT_hist","DT_hist",MassDT,Import(*hist));
+
+	RooRealVar pGaus1A("pGaus1A","Mean 1",-0.05,0.05);
+	RooRealVar pGaus1B("pGaus1B","Sigma 1",0,0.5);
+	RooGaussian fGaus1("fGaus1","fGaus1",MassDT,pGaus1A,pGaus1B); 
+	RooRealVar nGaus1("nGaus1","N_{Gaus1}",1,0,1e06);
+
+	RooAddPdf fTotal("fTotal","fTotal",RooArgList(fGaus1),RooArgList(nGaus1));
+	//RooAddPdf fTotal("fTotal","fTotal",RooArgList(fGaus1,fGaus2,fPolBg),RooArgList(nGaus1,nGaus2,nPolBg));
+	fTotal.fitTo(DT_hist);
+
+
+	TCanvas* can1 = new TCanvas("can1","",700,700);
+	RooPlot* plot1 = MassDT.frame(Title(" "));
+	DT_hist.plotOn(plot1);
+	fTotal.plotOn(plot1);
+	plot1->Draw();
+
 	return val;
 }
 
@@ -281,9 +301,10 @@ void readTree_V0(Int_t nEvents=10, Int_t cutFlag=0, const Char_t *inputFile="tes
 
 	for (int iBin = 0; iBin < nPtBins; ++iBin)
 	{
+		if (iBin!= 27) continue;
 		hYieldK0s->SetBinContent(iBin,ExtractYield(hV0_IMPtK0s->ProjectionX("x",iBin,iBin)));
-		hYieldL->SetBinContent(iBin,ExtractYield(hV0_IMPtL->ProjectionX("x",iBin,iBin)));
-		hYieldAL->SetBinContent(iBin,ExtractYield(hV0_IMPtAL->ProjectionX("x",iBin,iBin)));
+		//hYieldL->SetBinContent(iBin,ExtractYield(hV0_IMPtL->ProjectionX("x",iBin,iBin)));
+		//hYieldAL->SetBinContent(iBin,ExtractYield(hV0_IMPtAL->ProjectionX("x",iBin,iBin)));
 	}
 
 	//hV0_PtK0s->Scale(1,"width");
