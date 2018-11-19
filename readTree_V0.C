@@ -217,8 +217,8 @@ void readTree_V0(Int_t nEvents=10, Int_t cutFlag=0, const Char_t *inputFile="tes
 
 			if (v0->GetPosAnalysisTrack()->HasTPCPID()) hV0_DHasTPC->Fill(v0->GetPosAnalysisTrack()->GetPt());
 			if (v0->GetNegAnalysisTrack()->HasTPCPID()) hV0_DHasTPC->Fill(v0->GetNegAnalysisTrack()->GetPt());
-			if (v0->GetPosAnalysisTrack()->HasTOFPID()) hV0_DHasTPC->Fill(v0->GetPosAnalysisTrack()->GetPt());
-			if (v0->GetNegAnalysisTrack()->HasTOFPID()) hV0_DHasTPC->Fill(v0->GetNegAnalysisTrack()->GetPt());
+			if (v0->GetPosAnalysisTrack()->HasTOFPID()) hV0_DHasTOF->Fill(v0->GetPosAnalysisTrack()->GetPt());
+			if (v0->GetNegAnalysisTrack()->HasTOFPID()) hV0_DHasTOF->Fill(v0->GetNegAnalysisTrack()->GetPt());
 			hV0_DPt->Fill(v0->GetPosAnalysisTrack()->GetPt());
 			hV0_DPt->Fill(v0->GetNegAnalysisTrack()->GetPt());
 			hV0_DDTofPiPi->Fill(v0->GetPosAnalysisTrack()->GetNSigmaPionTOF(),v0->GetNegAnalysisTrack()->GetNSigmaPionTOF());
