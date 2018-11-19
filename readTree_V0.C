@@ -320,9 +320,12 @@ void readTree_V0(Int_t nEvents=10, Int_t cutFlag=0, const Char_t *inputFile="tes
 		hYieldAL->SetBinContent(iBin,ExtractYield(hV0_IMPtAL->ProjectionX("x",iBin,iBin)));
 	}
 
-	//hV0_PtK0s->Scale(1,"width");
-	//hV0_PtL->Scale(1,"width");
-	//hV0_PtAL->Scale(1,"width");
+	hV0_PtK0s->Scale(1,"width");
+	hV0_PtL->Scale(1,"width");
+	hV0_PtAL->Scale(1,"width")
+	hYieldK0s->Scale(1,"width");
+	hYieldL->Scale(1,"width");
+	hYieldAL->Scale(1,"width");
 	hV0_DHasTPC->Divide(hV0_DPt);
 	hV0_DHasTOF->Divide(hV0_DPt);
 
