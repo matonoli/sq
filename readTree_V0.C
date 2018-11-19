@@ -140,7 +140,7 @@ bool IsAL(AliAnalysisPIDV0* v0, Int_t cutFlag) {
 Float_t ExtractYield(TH1D* hist) {	// extracting with RooFit
 	Float_t val = hist->Integral(0,-1);
 	
-	Float_t fitMin = -0.1, fitMax = 0.1;
+	Float_t fitMin = -0.03, fitMax = 0.03;
 	hist->Rebin(8);
 	RooRealVar MassDT("MassDT","#Delta m_{inv} (GeV/#it{c}^{2})",fitMin,fitMax);
 	RooDataHist DT_hist("DT_hist","DT_hist",MassDT,Import(*hist));
@@ -155,8 +155,12 @@ Float_t ExtractYield(TH1D* hist) {	// extracting with RooFit
 	RooGaussian fGaus2("fGaus2","fGaus2",MassDT,pGaus2A,pGaus2B); 
 	RooRealVar nGaus2("nGaus2","N_{Gaus2}",1,0,1e06);
 
-	RooAddPdf fTotal("fTotal","fTotal",RooArgList(fGaus1,fGaus2),RooArgList(nGaus1,nGaus2));
-	//RooAddPdf fTotal("fTotal","fTotal",RooArgList(fGaus1,fGaus2,fPolBg),RooArgList(nGaus1,nGaus2,nPolBg));
+	RooRealVar pPolBgA("pPolBgA","Pol. par. A",-1,-100,100);
+	RooChebychev fPolBg("fPolBg","fPolBg",MassDT,pPolBgA);//RooArgSet(CB_DT_ParA,CB_DT_ParB,CB_DT_ParC));
+	RooRealVar nPolBg("nPolBg","N_{PolBg}",1,0,1e06);
+
+	//RooAddPdf fTotal("fTotal","fTotal",RooArgList(fGaus1,fGaus2),RooArgList(nGaus1,nGaus2));
+	RooAddPdf fTotal("fTotal","fTotal",RooArgList(fGaus1,fGaus2,fPolBg),RooArgList(nGaus1,nGaus2,nPolBg));
 	fTotal.fitTo(DT_hist);
 
 
