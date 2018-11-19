@@ -308,7 +308,7 @@ void readTree_V0(Int_t nEvents=10, Int_t cutFlag=0, const Char_t *inputFile="tes
 	}
 
 
-	ExtractYield(hV0_IMK0s);
+	ExtractYield((TH1D*)hV0_IMK0s);
 	for (int iBin = 0; iBin < nPtBins; ++iBin)
 	{
 		if (iBin!= 27) continue;
