@@ -8,6 +8,7 @@
 #include <iostream>
 
 using namespace std;
+using namespace RooFit;
 
 TChain* mChain;
 AliAnalysisPIDEvent* mEvent;
