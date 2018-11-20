@@ -159,7 +159,7 @@ void myLegendSetUp(TLegend *currentLegend=0, float currentTextSize=0.07, int col
 }
 
 Float_t* ExtractYield(TH1D* hist) {	// extracting with RooFit
-	Float_t val[];
+	static Float_t val[2];
 	val[0] = hist->Integral(hist->FindBin(-0.04),hist->FindBin(0.04));
 	
 	Float_t fitMin = -0.03, fitMax = 0.03;
