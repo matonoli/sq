@@ -347,7 +347,7 @@ void readTree_V0(Int_t nEvents=10, Int_t cutFlag=0, const Char_t *inputFile="tes
 	for (int iC = 0; iC < 3; ++iC)
 	{
 		cFits[iC] = new TCanvas(Form("cFits%i",iC),"",1400,1000);
-		cFits[iC]->Divide(7,5,0.005,0.005);
+		cFits[iC]->Divide(7,5,0.001,0.001);
 	}
 
 	//ExtractYield((TH1D*)hV0_IMK0s);
