@@ -190,7 +190,9 @@ Float_t ExtractYield(TH1D* hist) {	// extracting with RooFit
 	DT_hist.plotOn(plot1);
 	fTotal.plotOn(plot1);
 	plot1->SetMinimum(1e-05);
-	plot1->SetMaximum(1.3*plot1->GetMaximum());
+	plot1->SetMaximum(1.35*plot1->GetMaximum());
+	plot1->GetXaxis()->SetTitleSize(0.06);
+	plot1->GetYaxis()->SetTitleSize(0.06);
 	plot1->Draw();
 	TLegend *leg1 = new TLegend(0.075,0.7,0.5,0.88);
 	myLegendSetUp(leg1,0.065,1);
