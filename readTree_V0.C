@@ -182,13 +182,16 @@ Float_t ExtractYield(TH1D* hist) {	// extracting with RooFit
 
 	//RooAddPdf fTotal("fTotal","fTotal",RooArgList(fGaus1,fGaus2),RooArgList(nGaus1,nGaus2));
 	RooAddPdf fTotal("fTotal","fTotal",RooArgList(fGaus1,fGaus2,fPolBg),RooArgList(nGaus1,nGaus2,nPolBg));
-	fTotal.fitTo(DT_hist);
+	fTotal.fitTo(DT_hist,"q");
+
+	RooFormulaVar nGaus("nGaus","nGaus1+nGaus2",RooArgList(nGaus1,nGaus2));
+	printf("Errors are %f and %f, total is %f or %f wrt to %f", nGaus1.getError(), nGaus2.getError(), nGaus1.getError()+nGaus2.getError(),sqrt(nGaus1.getError()*nGaus1.getError()+nGaus2.getError()*nGaus2.getError()),nGaus.getError());
 
 	cFits[canCounter%3]->cd(1+canCounter/3);
 	RooPlot* plot1 = MassDT.frame(Title(" "));
 	//plot1->GetYaxis()->SetRangeUser(gPad->GetUymin(),2.*gPad->getUymax()); // zoom out
 	DT_hist.plotOn(plot1,MarkerSize(0.4));
-	fTotal.plotOn(plot1,LineWidth(0.8),LineColor(kMagenta));
+	fTotal.plotOn(plot1,LineWidth(1),LineColor(kRed));
 	plot1->SetMinimum(1e-05);
 	plot1->SetMaximum(1.35*plot1->GetMaximum());
 	plot1->GetXaxis()->SetTitleSize(0.05);
@@ -268,6 +271,9 @@ void readTree_V0(Int_t nEvents=10, Int_t cutFlag=0, const Char_t *inputFile="tes
 	TH2F* hV0_DTofPivp			= new TH2F("hV0_DTofPivp","",100,0,10,300,-15,15);
 	TH2F* hV0_DDDedx			= new TH2F("hV0_DDDedx","",300,0,300,300,0,300);
 	TH2F* hV0_DDedxvp			= new TH2F("hV0_DDedxvp","",100,0,10,300,0,300);
+
+	hV0_DHasTPC->SetTitle("HasTPC PID; p_{T} (GeV/#it{c}); Efficiency");
+	hV0_DHasTOF->SetTitle("HasTPC PID; p_{T} (GeV/#it{c}); Efficiency");
 
 	nEvents = (nEvents < mChain->GetEntries()) ? nEvents : mChain->GetEntries();
 	for (int iEv = 0; iEv < nEvents; ++iEv)	{
