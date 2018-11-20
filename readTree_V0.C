@@ -182,10 +182,10 @@ Float_t ExtractYield(TH1D* hist) {	// extracting with RooFit
 
 	//RooAddPdf fTotal("fTotal","fTotal",RooArgList(fGaus1,fGaus2),RooArgList(nGaus1,nGaus2));
 	RooAddPdf fTotal("fTotal","fTotal",RooArgList(fGaus1,fGaus2,fPolBg),RooArgList(nGaus1,nGaus2,nPolBg));
-	fTotal.fitTo(DT_hist,"q");
+	RooFitResult* fR = fTotal.fitTo(DT_hist,Save(),"q");
 
 	RooFormulaVar nGaus("nGaus","nGaus1+nGaus2",RooArgList(nGaus1,nGaus2));
-	printf("Errors are %f and %f, total is %f or %f wrt to %f", nGaus1.getError(), nGaus2.getError(), nGaus1.getError()+nGaus2.getError(),sqrt(nGaus1.getError()*nGaus1.getError()+nGaus2.getError()*nGaus2.getError()),nGaus.getError());
+	printf("Errors are %f and %f, total is %f or %f wrt to %f", nGaus1.getError(), nGaus2.getError(), nGaus1.getError()+nGaus2.getError(),sqrt(nGaus1.getError()*nGaus1.getError()+nGaus2.getError()*nGaus2.getError()),nGaus.getPropagatedError(fR));
 
 	cFits[canCounter%3]->cd(1+canCounter/3);
 	RooPlot* plot1 = MassDT.frame(Title(" "));
