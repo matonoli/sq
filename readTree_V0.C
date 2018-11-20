@@ -16,6 +16,12 @@ TClonesArray* bTracks = 0;
 TClonesArray* bV0s = 0;
 TCanvas* cFits[3];
 int canCounter = 0;
+TString cNames[] = {"#K^{0}_{s}", "#Lambda", "#bar{#Lambda}"};
+const Int_t nPtBins = 35;
+Double_t xBins[nPtBins+1] = { 0.90, 0.95, 1.00, 1.10, 1.20, 1.30, 1.40, 1.50, 1.60, 1.70, 
+	1.80, 1.90, 2.00, 2.20, 2.40, 2.60, 2.80, 3.00, 3.20, 3.40, 
+	3.60, 3.80, 4.00, 4.50, 5.00, 5.50, 6.00, 6.50, 7.00, 8.00, 
+	9.00, 10.00, 11.00, 12.00, 13.00, 14.00 }; 
 
 bool makeChain(const Char_t *inputFile="test.list") {
 
@@ -139,6 +145,19 @@ bool IsAL(AliAnalysisPIDV0* v0, Int_t cutFlag) {
 	return true;
 }
 
+void myLegendSetUp(TLegend *currentLegend=0, float currentTextSize=0.07, int columns=2)	{
+	currentLegend->SetTextFont(42);
+	currentLegend->SetBorderSize(0);
+	currentLegend->SetFillStyle(0);
+	currentLegend->SetFillColor(0);
+	currentLegend->SetMargin(0.25);
+	currentLegend->SetTextSize(currentTextSize);
+	currentLegend->SetEntrySeparation(0.5);
+	currentLegend->SetNColumns(columns);
+	
+	return;
+}
+
 Float_t ExtractYield(TH1D* hist) {	// extracting with RooFit
 	Float_t val = hist->Integral(hist->FindBin(-0.04),hist->FindBin(0.04));
 	
@@ -166,19 +185,21 @@ Float_t ExtractYield(TH1D* hist) {	// extracting with RooFit
 	fTotal.fitTo(DT_hist);
 
 
-	//TCanvas* can1 = new TCanvas("can1","",700,700);
-	//can1->cd();
+	
 	cFits[canCounter%3]->cd(1+canCounter/3);
-	//printf("cc is %i and %i \n",canCounter%3, 1+canCounter/3);
-	canCounter++;
-
 	RooPlot* plot1 = MassDT.frame(Title(" "));
 	DT_hist.plotOn(plot1);
 	fTotal.plotOn(plot1);
 	plot1->SetMinimum(1e-05);
 	plot1->Draw();
+	TLegend *leg1 = new TLegend(0.41,0.55,0.893,0.85);
+	myLegendSetUp(leg1,0.09,1);
+	leg1->AddEntry((TObject*)0,cNames[canCounter%3]);
+	leg1->AddEntry((TObject*)0,TString::Format("%4.2f < p_{T} < %4.2f (GeV/#it{c})",xBins[canCounter/3],xBins[1+canCounter/3]));
+	leg1->Draw();
 
 	val = (nGaus1.getVal()+nGaus2.getVal());
+	canCounter++;
 
 	return val;
 }
@@ -205,11 +226,6 @@ void readTree_V0(Int_t nEvents=10, Int_t cutFlag=0, const Char_t *inputFile="tes
     	1.80, 1.90, 2.00, 2.20, 2.40, 2.60, 2.80, 3.00, 3.20, 3.40, 
     	3.60, 3.80, 4.00, 4.50, 5.00, 5.50, 6.00, 6.50, 7.00, 8.00, 
     	9.00, 10.00, 11.00, 12.00, 13.00, 14.00, 15.00, 16.00, 18.00, 20.00 };*/
-	const Int_t nPtBins = 35;
-  	Double_t xBins[nPtBins+1] = { 0.90, 0.95, 1.00, 1.10, 1.20, 1.30, 1.40, 1.50, 1.60, 1.70, 
-    	1.80, 1.90, 2.00, 2.20, 2.40, 2.60, 2.80, 3.00, 3.20, 3.40, 
-    	3.60, 3.80, 4.00, 4.50, 5.00, 5.50, 6.00, 6.50, 7.00, 8.00, 
-    	9.00, 10.00, 11.00, 12.00, 13.00, 14.00 }; 
 
 
 	TH1F* hEventMonitor			= new TH1F("hEventMonitor","",10,-0.5,9.5);
