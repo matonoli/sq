@@ -347,7 +347,7 @@ void readTree_V0(Int_t nEvents=10, Int_t cutFlag=0, const Char_t *inputFile="tes
 	for (int iC = 0; iC < 3; ++iC)
 	{
 		cFits[iC] = new TCanvas(Form("cFits%i",iC),"",1400,1000);
-		cFits[iC]->Divide(7,5,0.001,0.001);
+		cFits[iC]->Divide(7,5,0.0005,0.0005);
 	}
 
 	//ExtractYield((TH1D*)hV0_IMK0s);
@@ -369,9 +369,9 @@ void readTree_V0(Int_t nEvents=10, Int_t cutFlag=0, const Char_t *inputFile="tes
 	hV0_DHasTOF->Divide(hV0_DPt);
 
 	TString path("$HOME/sq/pics/");
-	cFits[0]->SaveAs(path+"f_k0s.eps");
-	cFits[1]->SaveAs(path+"f_l.eps");
-	cFits[2]->SaveAs(path+"f_al.eps");
+	cFits[0]->SaveAs(path+"f_k0s.png");
+	cFits[1]->SaveAs(path+"f_l.png");
+	cFits[2]->SaveAs(path+"f_al.png");
 
 
 	printf(" WHAT IS UP \n", );
