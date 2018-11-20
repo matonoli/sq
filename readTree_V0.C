@@ -163,12 +163,13 @@ Float_t ExtractYield(TH1D* hist) {	// extracting with RooFit
 
 	//RooAddPdf fTotal("fTotal","fTotal",RooArgList(fGaus1,fGaus2),RooArgList(nGaus1,nGaus2));
 	RooAddPdf fTotal("fTotal","fTotal",RooArgList(fGaus1,fGaus2,fPolBg),RooArgList(nGaus1,nGaus2,nPolBg));
-	fTotal.fitTo(DT_hist);
+	//fTotal.fitTo(DT_hist);
 
 
 	//TCanvas* can1 = new TCanvas("can1","",700,700);
 	//can1->cd();
-	cFits[canCounter%3]->cd(1+canCounter/3);
+	//cFits[canCounter%3]->cd(1+canCounter/3);
+	printf("cc is %i and %i \n",canCounter%3, 1+canCounter/3);
 	canCounter++;
 
 	RooPlot* plot1 = MassDT.frame(Title(" "));
