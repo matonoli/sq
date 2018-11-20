@@ -369,7 +369,9 @@ void readTree_V0(Int_t nEvents=10, Int_t cutFlag=0, const Char_t *inputFile="tes
 	hV0_DHasTOF->Divide(hV0_DPt);
 
 	TString path("$HOME/sq/pics/");
-
+	cFits[0]->SaveAs(path+"f_k0s.eps");
+	cFits[1]->SaveAs(path+"f_l.eps");
+	cFits[2]->SaveAs(path+"f_al.eps");
 
 
 	printf(" WHAT IS UP \n", );
