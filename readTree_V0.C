@@ -161,7 +161,7 @@ void myLegendSetUp(TLegend *currentLegend=0, float currentTextSize=0.07, int col
 Float_t ExtractYield(TH1D* hist) {	// extracting with RooFit
 	Float_t val = hist->Integral(hist->FindBin(-0.04),hist->FindBin(0.04));
 	
-	Float_t fitMin = -0.04, fitMax = 0.04;
+	Float_t fitMin = -0.03, fitMax = 0.03;
 	hist->Rebin(8);
 	RooRealVar MassDT("MassDT","#Delta m_{inv} (GeV/#it{c}^{2})",fitMin,fitMax);
 	RooDataHist DT_hist("DT_hist","DT_hist",MassDT,Import(*hist));
@@ -195,8 +195,8 @@ Float_t ExtractYield(TH1D* hist) {	// extracting with RooFit
 	TLegend *leg1 = new TLegend(0.075,0.7,0.5,0.88);
 	myLegendSetUp(leg1,0.065,1);
 	leg1->AddEntry((TObject*)0,Form("%4.2f < p_{T} < %4.2f (GeV/#it{c})",xBins[canCounter/3],xBins[1+canCounter/3])," ");
-	leg1->AddEntry((TObject*)0,cNames[canCounter%3]," ");
-	leg1->AddEntry((TObject*)0,Form("chisq is %4.2f",plot1->chiSquare())," ");
+	leg1->AddEntry((TObject*)0,cNames[canCounter%3]+Form(" , #chi^{2}/ndf = %4.2f",plot1->chiSquare())," ");
+	//leg1->AddEntry((TObject*)0,Form("chisq is %4.2f",plot1->chiSquare())," ");
 	leg1->Draw();
 
 	val = (nGaus1.getVal()+nGaus2.getVal());
