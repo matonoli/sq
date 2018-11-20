@@ -191,8 +191,8 @@ Float_t ExtractYield(TH1D* hist) {	// extracting with RooFit
 	fTotal.plotOn(plot1);
 	plot1->SetMinimum(1e-05);
 	plot1->SetMaximum(1.35*plot1->GetMaximum());
-	plot1->GetXaxis()->SetTitleSize(0.06);
-	plot1->GetYaxis()->SetTitleSize(0.06);
+	plot1->GetXaxis()->SetTitleSize(0.05);
+	plot1->GetYaxis()->SetTitleSize(0.05);
 	plot1->Draw();
 	TLegend *leg1 = new TLegend(0.075,0.7,0.5,0.88);
 	myLegendSetUp(leg1,0.065,1);
@@ -347,7 +347,7 @@ void readTree_V0(Int_t nEvents=10, Int_t cutFlag=0, const Char_t *inputFile="tes
 	for (int iC = 0; iC < 3; ++iC)
 	{
 		cFits[iC] = new TCanvas(Form("cFits%i",iC),"",1400,1000);
-		cFits[iC]->Divide(7,5);
+		cFits[iC]->Divide(7,5,0,0);
 	}
 
 	//ExtractYield((TH1D*)hV0_IMK0s);
