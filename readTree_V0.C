@@ -14,6 +14,8 @@ TChain* mChain;
 AliAnalysisPIDEvent* mEvent;
 TClonesArray* bTracks = 0;
 TClonesArray* bV0s = 0;
+TCanvas* cFits[3];
+int canCounter = 0;
 
 bool makeChain(const Char_t *inputFile="test.list") {
 
@@ -138,20 +140,20 @@ bool IsAL(AliAnalysisPIDV0* v0, Int_t cutFlag) {
 }
 
 Float_t ExtractYield(TH1D* hist) {	// extracting with RooFit
-	Float_t val = hist->Integral(0,-1);
+	Float_t val = hist->Integral(hist->FindBin(-0.04),hist->FindBin(0.04));
 	
-	Float_t fitMin = -0.03, fitMax = 0.03;
+	Float_t fitMin = -0.04, fitMax = 0.04;
 	hist->Rebin(8);
 	RooRealVar MassDT("MassDT","#Delta m_{inv} (GeV/#it{c}^{2})",fitMin,fitMax);
 	RooDataHist DT_hist("DT_hist","DT_hist",MassDT,Import(*hist));
 
 	RooRealVar pGaus1A("pGaus1A","Mean 1",-0.001,0.001);
-	RooRealVar pGaus1B("pGaus1B","Sigma 1",0,0.1);
+	RooRealVar pGaus1B("pGaus1B","Sigma 1",0,0.2);
 	RooGaussian fGaus1("fGaus1","fGaus1",MassDT,pGaus1A,pGaus1B); 
 	RooRealVar nGaus1("nGaus1","N_{Gaus1}",1,0,1e06);
 
 	RooRealVar pGaus2A("pGaus2A","Mean 2",-0.001,0.001);
-	RooRealVar pGaus2B("pGaus2B","Sigma 2",0,0.1);
+	RooRealVar pGaus2B("pGaus2B","Sigma 2",0,0.2);
 	RooGaussian fGaus2("fGaus2","fGaus2",MassDT,pGaus2A,pGaus2B); 
 	RooRealVar nGaus2("nGaus2","N_{Gaus2}",1,0,1e06);
 
@@ -164,8 +166,11 @@ Float_t ExtractYield(TH1D* hist) {	// extracting with RooFit
 	fTotal.fitTo(DT_hist);
 
 
-	TCanvas* can1 = new TCanvas("can1","",700,700);
-	can1->cd();
+	//TCanvas* can1 = new TCanvas("can1","",700,700);
+	//can1->cd();
+	cFits[canCounter%3]->cd(1+canCounter/3);
+	canCounter++;
+
 	RooPlot* plot1 = MassDT.frame(Title(" "));
 	DT_hist.plotOn(plot1);
 	fTotal.plotOn(plot1);
@@ -319,6 +324,12 @@ void readTree_V0(Int_t nEvents=10, Int_t cutFlag=0, const Char_t *inputFile="tes
 		hV0TrCounter->Fill(V0Count,trCount);
 	}
 
+	TCanvas* cFits[3] = new TCanvas(,"",1400,1000);
+	for (int iC = 0; iC < 3; ++iC)
+	{
+		cFits[iC] = new TCanvas(Form("cFits%i",iC),"",1400,1000);
+		cFits[iC]->Divide(7,5);
+	}
 
 	//ExtractYield((TH1D*)hV0_IMK0s);
 	for (int iBin = 0; iBin < nPtBins; ++iBin)
@@ -337,6 +348,10 @@ void readTree_V0(Int_t nEvents=10, Int_t cutFlag=0, const Char_t *inputFile="tes
 	hYieldAL->Scale(1,"width");
 	hV0_DHasTPC->Divide(hV0_DPt);
 	hV0_DHasTOF->Divide(hV0_DPt);
+
+	TString path("$HOME/sq/pics/");
+
+
 
 	printf(" WHAT IS UP \n", );
 	//hEventMonitor->Draw();
