@@ -158,8 +158,9 @@ void myLegendSetUp(TLegend *currentLegend=0, float currentTextSize=0.07, int col
 	return;
 }
 
-Float_t ExtractYield(TH1D* hist) {	// extracting with RooFit
-	Float_t val = hist->Integral(hist->FindBin(-0.04),hist->FindBin(0.04));
+Float_t* ExtractYield(TH1D* hist) {	// extracting with RooFit
+	Float_t val[];
+	val[0] = hist->Integral(hist->FindBin(-0.04),hist->FindBin(0.04));
 	
 	Float_t fitMin = -0.03, fitMax = 0.03;
 	hist->Rebin(8);
@@ -185,7 +186,7 @@ Float_t ExtractYield(TH1D* hist) {	// extracting with RooFit
 	RooFitResult* fR = fTotal.fitTo(DT_hist,Save(),"q");
 
 	RooFormulaVar nGaus("nGaus","nGaus1+nGaus2",RooArgList(nGaus1,nGaus2));
-	printf("Errors are %f and %f, total is %f or %f wrt to %f \n", nGaus1.getError(), nGaus2.getError(), nGaus1.getError()+nGaus2.getError(),sqrt(nGaus1.getError()*nGaus1.getError()+nGaus2.getError()*nGaus2.getError()),nGaus.getPropagatedError(*fR));
+	//printf("Errors are %f and %f, total is %f or %f wrt to %f \n", nGaus1.getError(), nGaus2.getError(), nGaus1.getError()+nGaus2.getError(),sqrt(nGaus1.getError()*nGaus1.getError()+nGaus2.getError()*nGaus2.getError()),nGaus.getPropagatedError(*fR));
 
 	cFits[canCounter%3]->cd(1+canCounter/3);
 	RooPlot* plot1 = MassDT.frame(Title(" "));
@@ -204,7 +205,7 @@ Float_t ExtractYield(TH1D* hist) {	// extracting with RooFit
 	//leg1->AddEntry((TObject*)0,Form("chisq is %4.2f",plot1->chiSquare())," ");
 	leg1->Draw();
 
-	val = (nGaus1.getVal()+nGaus2.getVal());
+	val[0] = (nGaus1.getVal()+nGaus2.getVal());
 	canCounter++;
 
 	return val;
@@ -360,9 +361,9 @@ void readTree_V0(Int_t nEvents=10, Int_t cutFlag=0, const Char_t *inputFile="tes
 	for (int iBin = 0; iBin < 9; ++iBin)
 	{
 		//if (iBin!= 279) continue;
-		hYieldK0s->SetBinContent(iBin,ExtractYield(hV0_IMPtK0s->ProjectionX("x",iBin,iBin)));
-		hYieldL->SetBinContent(iBin,ExtractYield(hV0_IMPtL->ProjectionX("x",iBin,iBin)));
-		hYieldAL->SetBinContent(iBin,ExtractYield(hV0_IMPtAL->ProjectionX("x",iBin,iBin)));
+		hYieldK0s->SetBinContent(iBin,ExtractYield(hV0_IMPtK0s->ProjectionX("x",iBin,iBin))[0]);
+		hYieldL->SetBinContent(iBin,ExtractYield(hV0_IMPtL->ProjectionX("x",iBin,iBin))[0]);
+		hYieldAL->SetBinContent(iBin,ExtractYield(hV0_IMPtAL->ProjectionX("x",iBin,iBin))[0]);
 	}
 
 	hV0_PtK0s->Scale(1,"width");
