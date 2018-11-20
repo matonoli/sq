@@ -185,7 +185,7 @@ Float_t ExtractYield(TH1D* hist) {	// extracting with RooFit
 	RooFitResult* fR = fTotal.fitTo(DT_hist,Save(),"q");
 
 	RooFormulaVar nGaus("nGaus","nGaus1+nGaus2",RooArgList(nGaus1,nGaus2));
-	printf("Errors are %f and %f, total is %f or %f wrt to %f", nGaus1.getError(), nGaus2.getError(), nGaus1.getError()+nGaus2.getError(),sqrt(nGaus1.getError()*nGaus1.getError()+nGaus2.getError()*nGaus2.getError()),nGaus.getPropagatedError(*fR));
+	printf("Errors are %f and %f, total is %f or %f wrt to %f \n", nGaus1.getError(), nGaus2.getError(), nGaus1.getError()+nGaus2.getError(),sqrt(nGaus1.getError()*nGaus1.getError()+nGaus2.getError()*nGaus2.getError()),nGaus.getPropagatedError(*fR));
 
 	cFits[canCounter%3]->cd(1+canCounter/3);
 	RooPlot* plot1 = MassDT.frame(Title(" "));
@@ -357,7 +357,7 @@ void readTree_V0(Int_t nEvents=10, Int_t cutFlag=0, const Char_t *inputFile="tes
 	}
 
 	//ExtractYield((TH1D*)hV0_IMK0s);
-	for (int iBin = 0; iBin < nPtBins; ++iBin)
+	for (int iBin = 0; iBin < 9; ++iBin)
 	{
 		//if (iBin!= 279) continue;
 		hYieldK0s->SetBinContent(iBin,ExtractYield(hV0_IMPtK0s->ProjectionX("x",iBin,iBin)));
