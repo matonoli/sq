@@ -187,8 +187,8 @@ Float_t ExtractYield(TH1D* hist) {	// extracting with RooFit
 	cFits[canCounter%3]->cd(1+canCounter/3);
 	RooPlot* plot1 = MassDT.frame(Title(" "));
 	//plot1->GetYaxis()->SetRangeUser(gPad->GetUymin(),2.*gPad->getUymax()); // zoom out
-	DT_hist.plotOn(plot1,MarkerSize(0.7));
-	fTotal.plotOn(plot1,LineWidth(0.5));
+	DT_hist.plotOn(plot1,MarkerSize(0.4));
+	fTotal.plotOn(plot1,LineWidth(0.8),LineColor(kMagenta));
 	plot1->SetMinimum(1e-05);
 	plot1->SetMaximum(1.35*plot1->GetMaximum());
 	plot1->GetXaxis()->SetTitleSize(0.05);
