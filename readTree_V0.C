@@ -186,10 +186,11 @@ Float_t ExtractYield(TH1D* hist) {	// extracting with RooFit
 
 	cFits[canCounter%3]->cd(1+canCounter/3);
 	RooPlot* plot1 = MassDT.frame(Title(" "));
-	DT_hist.GetYaxis()->SetRangeUser(gPad->GetUymin(),2.*gPad->getUymax()); // zoom out
+	//plot1->GetYaxis()->SetRangeUser(gPad->GetUymin(),2.*gPad->getUymax()); // zoom out
 	DT_hist.plotOn(plot1);
 	fTotal.plotOn(plot1);
 	plot1->SetMinimum(1e-05);
+	plot1->SetMaximum(2.*plot1->GetMaximum());
 	plot1->Draw();
 	TLegend *leg1 = new TLegend(0.075,0.7,0.5,0.88);
 	myLegendSetUp(leg1,0.065,1);
