@@ -325,7 +325,6 @@ void readTree_V0(Int_t nEvents=10, Int_t cutFlag=0, const Char_t *inputFile="tes
 		hV0TrCounter->Fill(V0Count,trCount);
 	}
 
-	TCanvas* cFits[3] = new TCanvas(,"",1400,1000);
 	for (int iC = 0; iC < 3; ++iC)
 	{
 		cFits[iC] = new TCanvas(Form("cFits%i",iC),"",1400,1000);
