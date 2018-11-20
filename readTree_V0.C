@@ -196,7 +196,7 @@ Float_t ExtractYield(TH1D* hist) {	// extracting with RooFit
 	myLegendSetUp(leg1,0.065,1);
 	leg1->AddEntry((TObject*)0,Form("%4.2f < p_{T} < %4.2f (GeV/#it{c})",xBins[canCounter/3],xBins[1+canCounter/3])," ");
 	leg1->AddEntry((TObject*)0,cNames[canCounter%3]," ");
-	leg1->AddEntry((TObject*)0,Form("chisq is %4.2f",plot1->chiSquare("fTotal","DT_hist",0))," ");
+	leg1->AddEntry((TObject*)0,Form("chisq is %4.2f",plot1->chiSquare()," ");
 	leg1->Draw();
 
 	val = (nGaus1.getVal()+nGaus2.getVal());
