@@ -420,6 +420,8 @@ void readTree_V0(Int_t nEvents=10, Int_t cutFlag=0, const Char_t *inputFile="tes
 	hYieldAL->Scale(1,"width");
 	hV0_DHasTPC->Divide(hV0_DPt);
 	hV0_DHasTOF->Divide(hV0_DPt);
+	hSBinK0s->Add(hSBoutK0s,-1.);
+	hSBinK0s->Scale(1,"width");
 
 	hV0_DHasTPC->SetTitle("HasTPC PID; p_{T} (GeV/#it{c}); Efficiency");
 	hV0_DHasTOF->SetTitle("HasTPC PID; p_{T} (GeV/#it{c}); Efficiency");
@@ -430,6 +432,7 @@ void readTree_V0(Int_t nEvents=10, Int_t cutFlag=0, const Char_t *inputFile="tes
 	hV0_PtK0s->SetLineColor(kRed);
 	hV0_PtL->SetLineColor(kRed);
 	hV0_PtAL->SetLineColor(kRed);
+	hSBinK0s->SetLineColor(kGreen+2);
 
 	TString path("$HOME/sq/pics/");
 	cFits[0]->SaveAs(path+"f_k0s.png");
@@ -446,6 +449,7 @@ void readTree_V0(Int_t nEvents=10, Int_t cutFlag=0, const Char_t *inputFile="tes
 	hV0_PtK0s->Draw();
 	can1->SetLogy();
 	hYieldK0s->Draw("same");
+	hSBinK0s->Draw("same");
 	can1->SaveAs(path+"pt_k0s.png");
 	hV0_PtL->Draw();
 	hYieldL->Draw("same");
