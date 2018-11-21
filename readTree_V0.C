@@ -402,9 +402,9 @@ void readTree_V0(Int_t nEvents=10, Int_t cutFlag=0, const Char_t *inputFile="tes
 
 	TCanvas* can1 = new TCanvas("can1","",1000,700);
 	hV0_DHasTOF->Draw();
-	hV0_DHasTOF->SaveAs(path+"eff_tof.png");
+	can1->SaveAs(path+"eff_tof.png");
 	hV0_DHasTPC->Draw();
-	hV0_DHasTPC->SaveAs(path+"eff_tpc.png");
+	can1->SaveAs(path+"eff_tpc.png");
 
 	hV0_PtK0s->Draw();
 	can1->SetLogy();
