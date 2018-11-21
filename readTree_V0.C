@@ -364,13 +364,13 @@ void readTree_V0(Int_t nEvents=10, Int_t cutFlag=0, const Char_t *inputFile="tes
 	for (int iBin = 0; iBin < nPtBins; ++iBin)
 	{
 		//if (iBin!= 279) continue;
-		Float_t *p = ExtractYield(hV0_IMPtK0s->ProjectionX("x",iBin,iBin));
+		Float_t *p = ExtractYield(hV0_IMPtK0s->ProjectionX("x",iBin+1,iBin+1));	// 0 is underflow bin
 		hYieldK0s->SetBinContent(iBin,*(p+0));	
 		hYieldK0s->SetBinError(iBin,*(p+1));
-		*p = ExtractYield(hV0_IMPtL->ProjectionX("x",iBin,iBin));
+		*p = ExtractYield(hV0_IMPtL->ProjectionX("x",iBin+1,iBin+1));
 		hYieldL->SetBinContent(iBin,*(p+0));	
 		hYieldL->SetBinError(iBin,*(p+1));
-		*p = ExtractYield(hV0_IMPtAL->ProjectionX("x",iBin,iBin));
+		*p = ExtractYield(hV0_IMPtAL->ProjectionX("x",iBin+1,iBin+1));
 		hYieldAL->SetBinContent(iBin,*(p+0));	
 		hYieldAL->SetBinError(iBin,*(p+1));
 		//hYieldK0s->SetBinContent(iBin,*(ExtractYield(hV0_IMPtK0s->ProjectionX("x",iBin,iBin))+0));
@@ -391,6 +391,7 @@ void readTree_V0(Int_t nEvents=10, Int_t cutFlag=0, const Char_t *inputFile="tes
 	cFits[0]->SaveAs(path+"f_k0s.png");
 	cFits[1]->SaveAs(path+"f_l.png");
 	cFits[2]->SaveAs(path+"f_al.png");
+	cFits[0]->SaveAs(path+"f_k0s.png");
 
 
 	printf(" WHAT IS UP \n", );
