@@ -401,13 +401,26 @@ void readTree_V0(Int_t nEvents=10, Int_t cutFlag=0, const Char_t *inputFile="tes
 		y = ExtractYield(hV0_IMPtK0s->ProjectionX("x",iBin,iBin),1,0);
 		hSBoutK0s->SetBinContent(iBin,*(y+0));	
 		hSBoutK0s->SetBinError(iBin,*(y+1));
-
 		y = ExtractYield(hV0_IMPtK0s->ProjectionX("x",iBin,iBin),2,0);	// 0 is underflow bin
 		hYieldK0s->SetBinContent(iBin,*(y+0));	
 		hYieldK0s->SetBinError(iBin,*(y+1));
+
+		y = ExtractYield(hV0_IMPtL->ProjectionX("x",iBin,iBin),0,1);
+		hSBinL->SetBinContent(iBin,*(y+0));	
+		hSBinL->SetBinError(iBin,*(y+1));
+		y = ExtractYield(hV0_IMPtL->ProjectionX("x",iBin,iBin),1,1);
+		hSBoutL->SetBinContent(iBin,*(y+0));	
+		hSBoutL->SetBinError(iBin,*(y+1));
 		y = ExtractYield(hV0_IMPtL->ProjectionX("x",iBin,iBin),2,1);
 		hYieldL->SetBinContent(iBin,*(y+0));	
 		hYieldL->SetBinError(iBin,*(y+1));
+
+		y = ExtractYield(hV0_IMPtAL->ProjectionX("x",iBin,iBin),0,1);
+		hSBinAL->SetBinContent(iBin,*(y+0));	
+		hSBinAL->SetBinError(iBin,*(y+1));
+		y = ExtractYield(hV0_IMPtAL->ProjectionX("x",iBin,iBin),1,1);
+		hSBoutAL->SetBinContent(iBin,*(y+0));	
+		hSBoutAL->SetBinError(iBin,*(y+1));
 		y = ExtractYield(hV0_IMPtAL->ProjectionX("x",iBin,iBin),2,1);
 		hYieldAL->SetBinContent(iBin,*(y+0));	
 		hYieldAL->SetBinError(iBin,*(y+1));
@@ -426,6 +439,10 @@ void readTree_V0(Int_t nEvents=10, Int_t cutFlag=0, const Char_t *inputFile="tes
 	hV0_DHasTOF->Divide(hV0_DPt);
 	hSBinK0s->Add(hSBoutK0s,-1.);
 	hSBinK0s->Scale(1,"width");
+	hSBinL->Add(hSBoutL,-1.);
+	hSBinL->Scale(1,"width");
+	hSBinAL->Add(hSBoutAL,-1.);
+	hSBinAL->Scale(1,"width");
 
 	hV0_DHasTPC->SetTitle("HasTPC PID; p_{T} (GeV/#it{c}); Efficiency");
 	hV0_DHasTOF->SetTitle("HasTPC PID; p_{T} (GeV/#it{c}); Efficiency");
@@ -437,6 +454,8 @@ void readTree_V0(Int_t nEvents=10, Int_t cutFlag=0, const Char_t *inputFile="tes
 	hV0_PtL->SetLineColor(kRed);
 	hV0_PtAL->SetLineColor(kRed);
 	hSBinK0s->SetLineColor(kGreen+2);
+	hSBinL->SetLineColor(kGreen+2);
+	hSBinAL->SetLineColor(kGreen+2);
 
 	TString path("$HOME/sq/pics/");
 	cFits[0]->SaveAs(path+"f_k0s.png");
@@ -450,16 +469,27 @@ void readTree_V0(Int_t nEvents=10, Int_t cutFlag=0, const Char_t *inputFile="tes
 	hV0_DHasTPC->Draw();
 	can1->SaveAs(path+"eff_tpc.png");
 
+	TLegend *legpt = new TLegend(0.65,0.65,0.9,0.88);
+	myLegendSetUp(legpt,0.045,1);
+	legpt->AddEntry(hV0_PtK0s,"bin count in (-0.015,0.015)","l");
+	legpt->AddEntry(hYieldK0s,"gaus+gaus+pol1 fit","l");
+	legpt->AddEntry(hSBinK0s,"sideband","l");
+			
 	hV0_PtK0s->Draw();
 	can1->SetLogy();
 	hYieldK0s->Draw("same");
 	hSBinK0s->Draw("same");
+	legpt->Draw();
 	can1->SaveAs(path+"pt_k0s.png");
 	hV0_PtL->Draw();
 	hYieldL->Draw("same");
+	hSBinL->Draw("same");
+	legpt->Draw();
 	can1->SaveAs(path+"pt_l.png");
 	hV0_PtAL->Draw();
 	hYieldAL->Draw("same");
+	hSBinAL->Draw("same");
+	legpt->Draw();
 	can1->SaveAs(path+"pt_al.png");
 
 	printf(" WHAT IS UP \n", );
