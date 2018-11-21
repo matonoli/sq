@@ -167,7 +167,7 @@ Float_t* ExtractYield(TH1D* hist, Int_t method = 0, Int_t part = 0) {	// extract
 	switch (method) {
 		case 0 :
 			Float_t subRange = (!part) ? 0.03 : 0.015; 
-			hist->GetXaxis()->SetRange(-subRange,subRange);
+			hist->GetXaxis()->SetRangeUser(-subRange,subRange);
 			Float_t mean = hist->GetMean(); 
 			Float_t rms = hist->GetRMS();
 			printf("STATUS: part is %i rms is %f \n", part, rms);
@@ -179,7 +179,7 @@ Float_t* ExtractYield(TH1D* hist, Int_t method = 0, Int_t part = 0) {	// extract
 
 		case 1 :
 			Float_t subRange = (!part) ? 0.03 : 0.015; 
-			hist->GetXaxis()->SetRange(-subRange,subRange); 
+			hist->GetXaxis()->SetRangeUser(-subRange,subRange); 
 			Float_t mean = hist->GetMean(); 
 			Float_t rms = hist->GetRMS();
 			hist->GetXaxis()->SetRange();
