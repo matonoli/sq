@@ -469,8 +469,8 @@ void readTree_V0(Int_t nEvents=10, Int_t cutFlag=0, const Char_t *inputFile="tes
 	hV0_DHasTPC->Draw();
 	can1->SaveAs(path+"eff_tpc.png");
 
-	TLegend *legpt = new TLegend(0.65,0.65,0.9,0.88);
-	myLegendSetUp(legpt,0.045,1);
+	TLegend *legpt = new TLegend(0.55,0.45,0.9,0.68);
+	myLegendSetUp(legpt,0.025,1);
 	legpt->AddEntry(hV0_PtK0s,"bin count in (-0.015,0.015)","l");
 	legpt->AddEntry(hYieldK0s,"gaus+gaus+pol1 fit","l");
 	legpt->AddEntry(hSBinK0s,"sideband","l");
