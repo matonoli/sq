@@ -401,8 +401,13 @@ void readTree_V0(Int_t nEvents=10, Int_t cutFlag=0, const Char_t *inputFile="tes
 	cFits[0]->SaveAs(path+"f_k0s.png");
 
 	TCanvas* can1 = new TCanvas("can1","",1000,700);
-	can1->SetLogy();
+	hV0_DHasTOF->Draw();
+	hV0_DHasTOF->SaveAs(path+"eff_tof.png");
+	hV0_DHasTPC->Draw();
+	hV0_DHasTPC->SaveAs(path+"eff_tpc.png");
+
 	hV0_PtK0s->Draw();
+	can1->SetLogy();
 	hYieldK0s->Draw("same");
 	can1->SaveAs(path+"pt_k0s.png");
 	hV0_PtL->Draw();
