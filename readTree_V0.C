@@ -18,7 +18,7 @@ TCanvas* cFits[3];
 int canCounter = 0;
 TString cNames[] = {"K^{0}_{s}", "#Lambda", "#bar{#Lambda}"};
 const Int_t nPtBins = 35;
-Double_t xBins[nPtBins+1] = { 0.90, 0.95, 1.00, 1.10, 1.20, 1.30, 1.40, 1.50, 1.60, 1.70, 
+Double_t xBins[nPtBins+1] = { 0.00, 0.95, 1.00, 1.10, 1.20, 1.30, 1.40, 1.50, 1.60, 1.70, 
 	1.80, 1.90, 2.00, 2.20, 2.40, 2.60, 2.80, 3.00, 3.20, 3.40, 
 	3.60, 3.80, 4.00, 4.50, 5.00, 5.50, 6.00, 6.50, 7.00, 8.00, 
 	9.00, 10.00, 11.00, 12.00, 13.00, 14.00 }; 
@@ -161,7 +161,7 @@ void myLegendSetUp(TLegend *currentLegend=0, float currentTextSize=0.07, int col
 Float_t* ExtractYield(TH1D* hist) {	// extracting with RooFit
 	
 	static Float_t val[2];
-	val[0] = hist->Integral(hist->FindBin(-0.015),hist->FindBin(0.015));
+	val[0] = hist->Integral(hist->FindBin(-0.01),hist->FindBin(0.01));
 	
 	Float_t fitMin = -0.03, fitMax = 0.03;
 	hist->Rebin(8);
@@ -276,9 +276,6 @@ void readTree_V0(Int_t nEvents=10, Int_t cutFlag=0, const Char_t *inputFile="tes
 	TH2F* hV0_DDDedx			= new TH2F("hV0_DDDedx","",300,0,300,300,0,300);
 	TH2F* hV0_DDedxvp			= new TH2F("hV0_DDedxvp","",100,0,10,300,0,300);
 
-	hV0_DHasTPC->SetTitle("HasTPC PID; p_{T} (GeV/#it{c}); Efficiency");
-	hV0_DHasTOF->SetTitle("HasTPC PID; p_{T} (GeV/#it{c}); Efficiency");
-
 	nEvents = (nEvents < mChain->GetEntries()) ? nEvents : mChain->GetEntries();
 	for (int iEv = 0; iEv < nEvents; ++iEv)	{
 		
@@ -322,18 +319,18 @@ void readTree_V0(Int_t nEvents=10, Int_t cutFlag=0, const Char_t *inputFile="tes
 			hV0_DDedxvp->Fill(v0->GetNegAnalysisTrack()->GetP(),v0->GetNegAnalysisTrack()->GetTPCdEdx());
 
 
-			bool noCuts = 0;
+			bool noCuts = 0; float masscut = 0.015;
 			if (noCuts || IsK0s(v0,cutFlag)) 	{
 				hV0_IMK0s->Fill(v0->GetIMK0s());	
-				hV0_PtK0s->Fill(v0->GetPt());
+				if (fabs(v0->GetIMK0s())<masscut) hV0_PtK0s->Fill(v0->GetPt());
 				hV0_IMPtK0s->Fill(v0->GetIMK0s(),v0->GetPt()); 		}
 			if (noCuts || IsL(v0,cutFlag)) 		{
 				hV0_IML->Fill(v0->GetIML());		
-				hV0_PtL->Fill(v0->GetPt());
+				if (fabs(v0->GetIMK0s())<masscut) hV0_PtL->Fill(v0->GetPt());
 				hV0_IMPtL->Fill(v0->GetIML(),v0->GetPt());			}
 			if (noCuts || IsAL(v0,cutFlag)) 	{
 				hV0_IMAL->Fill(v0->GetIMAL());
-				hV0_PtAL->Fill(v0->GetPt());
+				if (fabs(v0->GetIMK0s())<masscut) hV0_PtAL->Fill(v0->GetPt());
 				hV0_IMPtAL->Fill(v0->GetIMAL(),v0->GetPt());		}
 		}
 
@@ -361,16 +358,16 @@ void readTree_V0(Int_t nEvents=10, Int_t cutFlag=0, const Char_t *inputFile="tes
 	}
 
 	//ExtractYield((TH1D*)hV0_IMK0s);
-	for (int iBin = 0; iBin < nPtBins; ++iBin)
+	for (int iBin = 1; iBin < nPtBins+1; ++iBin)
 	{
 		//if (iBin!= 279) continue;
-		Float_t *p = ExtractYield(hV0_IMPtK0s->ProjectionX("x",iBin+1,iBin+1));	// 0 is underflow bin
+		Float_t *p = ExtractYield(hV0_IMPtK0s->ProjectionX("x",iBin,iBin));	// 0 is underflow bin
 		hYieldK0s->SetBinContent(iBin,*(p+0));	
 		hYieldK0s->SetBinError(iBin,*(p+1));
-		*p = ExtractYield(hV0_IMPtL->ProjectionX("x",iBin+1,iBin+1));
+		*p = ExtractYield(hV0_IMPtL->ProjectionX("x",iBin,iBin));
 		hYieldL->SetBinContent(iBin,*(p+0));	
 		hYieldL->SetBinError(iBin,*(p+1));
-		*p = ExtractYield(hV0_IMPtAL->ProjectionX("x",iBin+1,iBin+1));
+		*p = ExtractYield(hV0_IMPtAL->ProjectionX("x",iBin,iBin));
 		hYieldAL->SetBinContent(iBin,*(p+0));	
 		hYieldAL->SetBinError(iBin,*(p+1));
 		//hYieldK0s->SetBinContent(iBin,*(ExtractYield(hV0_IMPtK0s->ProjectionX("x",iBin,iBin))+0));
@@ -387,12 +384,33 @@ void readTree_V0(Int_t nEvents=10, Int_t cutFlag=0, const Char_t *inputFile="tes
 	hV0_DHasTPC->Divide(hV0_DPt);
 	hV0_DHasTOF->Divide(hV0_DPt);
 
+	hV0_DHasTPC->SetTitle("HasTPC PID; p_{T} (GeV/#it{c}); Efficiency");
+	hV0_DHasTOF->SetTitle("HasTPC PID; p_{T} (GeV/#it{c}); Efficiency");
+	hV0_PtK0s->SetTitle("; p_{T} (GeV/#it{c}); K_{0}^{s} yield");
+	hV0_PtL->SetTitle("; p_{T} (GeV/#it{c}); #Lambda yield");
+	hV0_PtAL->SetTitle("; p_{T} (GeV/#it{c}); #bar{#Lambda} yield");
+
+	hV0_PtK0s->SetLineColor(kRed);
+	hV0_PtL->SetLineColor(kRed);
+	hV0_PtAL->SetLineColor(kRed);
+
 	TString path("$HOME/sq/pics/");
 	cFits[0]->SaveAs(path+"f_k0s.png");
 	cFits[1]->SaveAs(path+"f_l.png");
 	cFits[2]->SaveAs(path+"f_al.png");
 	cFits[0]->SaveAs(path+"f_k0s.png");
 
+	TCanvas* can1 = new TCanvas("can1","",1000,700);
+	can1->SetLogy();
+	hV0_PtK0s->Draw();
+	hYieldK0s->Draw("same");
+	can1->SaveAs(path+"pt_k0s.png");
+	hV0_PtL->Draw();
+	hYieldL->Draw("same");
+	can1->SaveAs(path+"pt_l.png");
+	hV0_PtAL->Draw();
+	hYieldAL->Draw("same");
+	can1->SaveAs(path+"pt_al.png");
 
 	printf(" WHAT IS UP \n", );
 	//hEventMonitor->Draw();
