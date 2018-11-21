@@ -159,25 +159,26 @@ void myLegendSetUp(TLegend *currentLegend=0, float currentTextSize=0.07, int col
 }
 
 Float_t* ExtractYield(TH1D* hist) {	// extracting with RooFit
+	
 	static Float_t val[2];
-	val[0] = hist->Integral(hist->FindBin(-0.04),hist->FindBin(0.04));
+	val[0] = hist->Integral(hist->FindBin(-0.015),hist->FindBin(0.015));
 	
 	Float_t fitMin = -0.03, fitMax = 0.03;
 	hist->Rebin(8);
 	RooRealVar MassDT("MassDT","#Delta m_{inv} (GeV/#it{c}^{2})",fitMin,fitMax);
 	RooDataHist DT_hist("DT_hist","DT_hist",MassDT,Import(*hist));
 
-	RooRealVar pGaus1A("pGaus1A","Mean 1",-0.001,0.001);
-	RooRealVar pGaus1B("pGaus1B","Sigma 1",0,0.2);
+	RooRealVar pGaus1A("pGaus1A","Mean 1",-0.004,0.004);
+	RooRealVar pGaus1B("pGaus1B","Sigma 1",0,0.01);
 	RooGaussian fGaus1("fGaus1","fGaus1",MassDT,pGaus1A,pGaus1B); 
 	RooRealVar nGaus1("nGaus1","N_{Gaus1}",1,0,1e06);
 
-	RooRealVar pGaus2A("pGaus2A","Mean 2",-0.001,0.001);
-	RooRealVar pGaus2B("pGaus2B","Sigma 2",0,0.2);
+	RooRealVar pGaus2A("pGaus2A","Mean 2",-0.004,0.004);
+	RooRealVar pGaus2B("pGaus2B","Sigma 2",0,0.01);
 	RooGaussian fGaus2("fGaus2","fGaus2",MassDT,pGaus2A,pGaus2B); 
 	RooRealVar nGaus2("nGaus2","N_{Gaus2}",1,0,1e06);
 
-	RooRealVar pPolBgA("pPolBgA","Pol. par. A",-1,-100,100);
+	RooRealVar pPolBgA("pPolBgA","Pol. par. A",0,-200,200);
 	RooChebychev fPolBg("fPolBg","fPolBg",MassDT,pPolBgA);//RooArgSet(CB_DT_ParA,CB_DT_ParB,CB_DT_ParC));
 	RooRealVar nPolBg("nPolBg","N_{PolBg}",1,0,1e06);
 
@@ -205,7 +206,9 @@ Float_t* ExtractYield(TH1D* hist) {	// extracting with RooFit
 	//leg1->AddEntry((TObject*)0,Form("chisq is %4.2f",plot1->chiSquare())," ");
 	leg1->Draw();
 
-	val[0] = (nGaus1.getVal()+nGaus2.getVal());
+	//val[0] = (nGaus1.getVal()+nGaus2.getVal());
+	val[0] = nGaus.getVal();
+	val[1] = nGaus.getPropagatedError(*fR);
 	canCounter++;
 
 	return val;
@@ -353,16 +356,23 @@ void readTree_V0(Int_t nEvents=10, Int_t cutFlag=0, const Char_t *inputFile="tes
 
 	for (int iC = 0; iC < 3; ++iC)
 	{
-		cFits[iC] = new TCanvas(Form("cFits%i",iC),"",1400,1000);
+		cFits[iC] = new TCanvas(Form("cFits%i",iC),"",2800,2000);
 		cFits[iC]->Divide(7,5,0.0005,0.0005);
 	}
 
 	//ExtractYield((TH1D*)hV0_IMK0s);
-	for (int iBin = 0; iBin < 9; ++iBin)
+	for (int iBin = 0; iBin < nPtBins; ++iBin)
 	{
 		//if (iBin!= 279) continue;
 		Float_t *p = ExtractYield(hV0_IMPtK0s->ProjectionX("x",iBin,iBin));
-		hYieldK0s->SetBinContent(iBin,*(p+0));
+		hYieldK0s->SetBinContent(iBin,*(p+0));	
+		hYieldK0s->SetBinError(iBin,*(p+1));
+		*p = ExtractYield(hV0_IMPtL->ProjectionX("x",iBin,iBin));
+		hYieldL->SetBinContent(iBin,*(p+0));	
+		hYieldL->SetBinError(iBin,*(p+1));
+		*p = ExtractYield(hV0_IMPtAL->ProjectionX("x",iBin,iBin));
+		hYieldAL->SetBinContent(iBin,*(p+0));	
+		hYieldAL->SetBinError(iBin,*(p+1));
 		//hYieldK0s->SetBinContent(iBin,*(ExtractYield(hV0_IMPtK0s->ProjectionX("x",iBin,iBin))+0));
 		//hYieldL->SetBinContent(iBin,*(ExtractYield(hV0_IMPtL->ProjectionX("x",iBin,iBin))+0));
 		//hYieldAL->SetBinContent(iBin,*(ExtractYield(hV0_IMPtAL->ProjectionX("x",iBin,iBin))+0));
