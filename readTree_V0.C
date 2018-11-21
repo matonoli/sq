@@ -158,58 +158,80 @@ void myLegendSetUp(TLegend *currentLegend=0, float currentTextSize=0.07, int col
 	return;
 }
 
-Float_t* ExtractYield(TH1D* hist) {	// extracting with RooFit
+Float_t* ExtractYield(TH1D* hist, Int_t method = 0, Int_t part = 0) {	// extracting with RooFit, 0 is sideband, 1 is sideband bg 2 is fit
 	
 	static Float_t val[2];
-	val[0] = hist->Integral(hist->FindBin(-0.01),hist->FindBin(0.01));
-	
+	val[0] = 0; val[1] = 0;
 	Float_t fitMin = -0.03, fitMax = 0.03;
-	hist->Rebin(8);
-	RooRealVar MassDT("MassDT","#Delta m_{inv} (GeV/#it{c}^{2})",fitMin,fitMax);
-	RooDataHist DT_hist("DT_hist","DT_hist",MassDT,Import(*hist));
 
-	RooRealVar pGaus1A("pGaus1A","Mean 1",-0.004,0.004);
-	RooRealVar pGaus1B("pGaus1B","Sigma 1",0,0.01);
-	RooGaussian fGaus1("fGaus1","fGaus1",MassDT,pGaus1A,pGaus1B); 
-	RooRealVar nGaus1("nGaus1","N_{Gaus1}",1,0,1e06);
+	switch (method) {
+		case 0 :
+			Float_t subRange = (!part) ? 0.03 : 0.015; 
+			hist->GetXaxis()->SetRange(-subRange,subRange);
+			Float_t mean = hist->GetMean(); 
+			Float_t rms = hist->GetRMS();
+			hist->GetXaxis()->SetRange();
+			val[0] = hist->Integral(hist->FindBin(mean-3.*rms),hist->FindBin(mean+3.*rms));
+			val[1] = sqrt(val[0]);
+			break;
 
-	RooRealVar pGaus2A("pGaus2A","Mean 2",-0.004,0.004);
-	RooRealVar pGaus2B("pGaus2B","Sigma 2",0,0.01);
-	RooGaussian fGaus2("fGaus2","fGaus2",MassDT,pGaus2A,pGaus2B); 
-	RooRealVar nGaus2("nGaus2","N_{Gaus2}",1,0,1e06);
+		case 1 :
+			Float_t subRange = (!part) ? 0.03 : 0.015; 
+			hist->GetXaxis()->SetRange(-subRange,subRange); 
+			Float_t mean = hist->GetMean(); 
+			Float_t rms = hist->GetRMS();
+			hist->GetXaxis()->SetRange();
+			val[0] = hist->Integral(hist->FindBin(mean-6.*rms),hist->FindBin(mean-3.*rms));
+			val[0] += hist->Integral(hist->FindBin(mean+3.*rms),hist->FindBin(mean+6.*rms));
+			val[1] = sqrt(val[0]);
+			break;
 
-	RooRealVar pPolBgA("pPolBgA","Pol. par. A",0,-200,200);
-	RooChebychev fPolBg("fPolBg","fPolBg",MassDT,pPolBgA);//RooArgSet(CB_DT_ParA,CB_DT_ParB,CB_DT_ParC));
-	RooRealVar nPolBg("nPolBg","N_{PolBg}",1,0,1e06);
-
-	//RooAddPdf fTotal("fTotal","fTotal",RooArgList(fGaus1,fGaus2),RooArgList(nGaus1,nGaus2));
-	RooAddPdf fTotal("fTotal","fTotal",RooArgList(fGaus1,fGaus2,fPolBg),RooArgList(nGaus1,nGaus2,nPolBg));
-	RooFitResult* fR = fTotal.fitTo(DT_hist,Save(),"q");
-
-	RooFormulaVar nGaus("nGaus","nGaus1+nGaus2",RooArgList(nGaus1,nGaus2));
-	//printf("Errors are %f and %f, total is %f or %f wrt to %f \n", nGaus1.getError(), nGaus2.getError(), nGaus1.getError()+nGaus2.getError(),sqrt(nGaus1.getError()*nGaus1.getError()+nGaus2.getError()*nGaus2.getError()),nGaus.getPropagatedError(*fR));
-
-	cFits[canCounter%3]->cd(1+canCounter/3);
-	RooPlot* plot1 = MassDT.frame(Title(" "));
-	//plot1->GetYaxis()->SetRangeUser(gPad->GetUymin(),2.*gPad->getUymax()); // zoom out
-	DT_hist.plotOn(plot1,MarkerSize(0.4));
-	fTotal.plotOn(plot1,LineWidth(1),LineColor(kRed));
-	plot1->SetMinimum(1e-05);
-	plot1->SetMaximum(1.35*plot1->GetMaximum());
-	plot1->GetXaxis()->SetTitleSize(0.05);
-	plot1->GetYaxis()->SetTitleSize(0.05);
-	plot1->Draw();
-	TLegend *leg1 = new TLegend(0.075,0.7,0.5,0.88);
-	myLegendSetUp(leg1,0.065,1);
-	leg1->AddEntry((TObject*)0,Form("%4.2f < p_{T} < %4.2f (GeV/#it{c})",xBins[canCounter/3],xBins[1+canCounter/3])," ");
-	leg1->AddEntry((TObject*)0,cNames[canCounter%3]+Form(" , #chi^{2}/ndf = %4.2f",plot1->chiSquare())," ");
-	//leg1->AddEntry((TObject*)0,Form("chisq is %4.2f",plot1->chiSquare())," ");
-	leg1->Draw();
-
-	//val[0] = (nGaus1.getVal()+nGaus2.getVal());
-	val[0] = nGaus.getVal();
-	val[1] = nGaus.getPropagatedError(*fR);
-	canCounter++;
+		case 2 :
+			hist->Rebin(8);
+			RooRealVar MassDT("MassDT","#Delta m_{inv} (GeV/#it{c}^{2})",fitMin,fitMax);
+			RooDataHist DT_hist("DT_hist","DT_hist",MassDT,Import(*hist));
+		
+			RooRealVar pGaus1A("pGaus1A","Mean 1",-0.004,0.004);
+			RooRealVar pGaus1B("pGaus1B","Sigma 1",0,0.01);
+			RooGaussian fGaus1("fGaus1","fGaus1",MassDT,pGaus1A,pGaus1B); 
+			RooRealVar nGaus1("nGaus1","N_{Gaus1}",1,0,1e06);
+		
+			RooRealVar pGaus2A("pGaus2A","Mean 2",-0.004,0.004);
+			RooRealVar pGaus2B("pGaus2B","Sigma 2",0,0.01);
+			RooGaussian fGaus2("fGaus2","fGaus2",MassDT,pGaus2A,pGaus2B); 
+			RooRealVar nGaus2("nGaus2","N_{Gaus2}",1,0,1e06);
+		
+			RooRealVar pPolBgA("pPolBgA","Pol. par. A",0,-200,200);
+			RooChebychev fPolBg("fPolBg","fPolBg",MassDT,pPolBgA);//RooArgSet(CB_DT_ParA,CB_DT_ParB,CB_DT_ParC));
+			RooRealVar nPolBg("nPolBg","N_{PolBg}",1,0,1e06);
+		
+			//RooAddPdf fTotal("fTotal","fTotal",RooArgList(fGaus1,fGaus2),RooArgList(nGaus1,nGaus2));
+			RooAddPdf fTotal("fTotal","fTotal",RooArgList(fGaus1,fGaus2,fPolBg),RooArgList(nGaus1,nGaus2,nPolBg));
+			RooFitResult* fR = fTotal.fitTo(DT_hist,Save(),"q");
+		
+			RooFormulaVar nGaus("nGaus","nGaus1+nGaus2",RooArgList(nGaus1,nGaus2));
+			//printf("Errors are %f and %f, total is %f or %f wrt to %f \n", nGaus1.getError(), nGaus2.getError(), nGaus1.getError()+nGaus2.getError(),sqrt(nGaus1.getError()*nGaus1.getError()+nGaus2.getError()*nGaus2.getError()),nGaus.getPropagatedError(*fR));
+		
+			cFits[canCounter%3]->cd(1+canCounter/3);
+			RooPlot* plot1 = MassDT.frame(Title(" "));
+			DT_hist.plotOn(plot1,MarkerSize(0.4));
+			fTotal.plotOn(plot1,LineWidth(1),LineColor(kRed));
+			plot1->SetMinimum(1e-05);
+			plot1->SetMaximum(1.35*plot1->GetMaximum());
+			plot1->GetXaxis()->SetTitleSize(0.05);
+			plot1->GetYaxis()->SetTitleSize(0.05);
+			plot1->Draw();
+			TLegend *leg1 = new TLegend(0.075,0.7,0.5,0.88);
+			myLegendSetUp(leg1,0.065,1);
+			leg1->AddEntry((TObject*)0,Form("%4.2f < p_{T} < %4.2f (GeV/#it{c})",xBins[canCounter/3],xBins[1+canCounter/3])," ");
+			leg1->AddEntry((TObject*)0,cNames[canCounter%3]+Form(" , #chi^{2}/ndf = %4.2f",plot1->chiSquare())," ");
+			leg1->Draw();
+	
+			val[0] = nGaus.getVal();
+			val[1] = nGaus.getPropagatedError(*fR);
+			canCounter++;
+			break;
+	}
 
 	return val;
 }
@@ -264,6 +286,14 @@ void readTree_V0(Int_t nEvents=10, Int_t cutFlag=0, const Char_t *inputFile="tes
 	hV0_IMAL->Sumw2();
 	hV0_PtAL->Sumw2();
 	hYieldAL->Sumw2();
+
+
+	TH1F* hSBinK0s				= new TH1F("hSBinK0s","",nPtBins,xBins);
+	TH1F* hSBinL				= new TH1F("hSBinL","",nPtBins,xBins);
+	TH1F* hSBinAL				= new TH1F("hSBinAL","",nPtBins,xBins);
+	TH1F* hSBoutK0s				= new TH1F("hSBoutK0s","",nPtBins,xBins);
+	TH1F* hSBoutL				= new TH1F("hSBoutL","",nPtBins,xBins);
+	TH1F* hSBoutAL				= new TH1F("hSBoutAL","",nPtBins,xBins);
 
 	TH1F* hV0_DHasTPC			= new TH1F("hV0_DHasTPC","",200,0,10);
 	hV0_DHasTPC->Sumw2();
@@ -361,15 +391,15 @@ void readTree_V0(Int_t nEvents=10, Int_t cutFlag=0, const Char_t *inputFile="tes
 	for (int iBin = 1; iBin < nPtBins+1; ++iBin)
 	{
 		//if (iBin!= 279) continue;
-		Float_t *yK = ExtractYield(hV0_IMPtK0s->ProjectionX("x",iBin,iBin));	// 0 is underflow bin
-		hYieldK0s->SetBinContent(iBin,*(yK+0));	
-		hYieldK0s->SetBinError(iBin,*(yK+1));
-		Float_t *yL = ExtractYield(hV0_IMPtL->ProjectionX("x",iBin,iBin));
-		hYieldL->SetBinContent(iBin,*(yL+0));	
-		hYieldL->SetBinError(iBin,*(yL+1));
-		Float_t *yAL = ExtractYield(hV0_IMPtAL->ProjectionX("x",iBin,iBin));
-		hYieldAL->SetBinContent(iBin,*(yAL+0));	
-		hYieldAL->SetBinError(iBin,*(yAL+1));
+		Float_t *y = ExtractYield(hV0_IMPtK0s->ProjectionX("x",iBin,iBin),0,0);	// 0 is underflow bin
+		hYieldK0s->SetBinContent(iBin,*(y+0));	
+		hYieldK0s->SetBinError(iBin,*(y+1));
+		y = ExtractYield(hV0_IMPtL->ProjectionX("x",iBin,iBin),0,1);
+		hYieldL->SetBinContent(iBin,*(y+0));	
+		hYieldL->SetBinError(iBin,*(y+1));
+		y = ExtractYield(hV0_IMPtAL->ProjectionX("x",iBin,iBin),0,1);
+		hYieldAL->SetBinContent(iBin,*(y+0));	
+		hYieldAL->SetBinError(iBin,*(y+1));
 		//hYieldK0s->SetBinContent(iBin,*(ExtractYield(hV0_IMPtK0s->ProjectionX("x",iBin,iBin))+0));
 		//hYieldL->SetBinContent(iBin,*(ExtractYield(hV0_IMPtL->ProjectionX("x",iBin,iBin))+0));
 		//hYieldAL->SetBinContent(iBin,*(ExtractYield(hV0_IMPtAL->ProjectionX("x",iBin,iBin))+0));
