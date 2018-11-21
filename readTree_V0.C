@@ -170,8 +170,10 @@ Float_t* ExtractYield(TH1D* hist, Int_t method = 0, Int_t part = 0) {	// extract
 			hist->GetXaxis()->SetRange(-subRange,subRange);
 			Float_t mean = hist->GetMean(); 
 			Float_t rms = hist->GetRMS();
+			printf("STATUS: part is %i rms is %f \n", part, rms);
 			hist->GetXaxis()->SetRange();
 			val[0] = hist->Integral(hist->FindBin(mean-3.*rms),hist->FindBin(mean+3.*rms));
+			printf("STATUS: int inside is %f \n", val[0]);
 			val[1] = sqrt(val[0]);
 			break;
 
@@ -183,6 +185,7 @@ Float_t* ExtractYield(TH1D* hist, Int_t method = 0, Int_t part = 0) {	// extract
 			hist->GetXaxis()->SetRange();
 			val[0] = hist->Integral(hist->FindBin(mean-6.*rms),hist->FindBin(mean-3.*rms));
 			val[0] += hist->Integral(hist->FindBin(mean+3.*rms),hist->FindBin(mean+6.*rms));
+			printf("STATUS: int outside is %f \n", val[0]);
 			val[1] = sqrt(val[0]);
 			break;
 
@@ -228,6 +231,7 @@ Float_t* ExtractYield(TH1D* hist, Int_t method = 0, Int_t part = 0) {	// extract
 			leg1->Draw();
 	
 			val[0] = nGaus.getVal();
+			printf("STATUS: int from fit is %f \n", val[0]);
 			val[1] = nGaus.getPropagatedError(*fR);
 			canCounter++;
 			break;
