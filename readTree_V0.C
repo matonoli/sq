@@ -390,8 +390,15 @@ void readTree_V0(Int_t nEvents=10, Int_t cutFlag=0, const Char_t *inputFile="tes
 	//ExtractYield((TH1D*)hV0_IMK0s);
 	for (int iBin = 1; iBin < nPtBins+1; ++iBin)
 	{
-		//if (iBin!= 279) continue;
-		Float_t *y = ExtractYield(hV0_IMPtK0s->ProjectionX("x",iBin,iBin),2,0);	// 0 is underflow bin
+		Float_t* y;
+		y = ExtractYield(hV0_IMPtK0s->ProjectionX("x",iBin,iBin),0,0);
+		hSBinK0s->SetBinContent(iBin,*(y+0));	
+		hSBinK0s->SetBinError(iBin,*(y+1));
+		y = ExtractYield(hV0_IMPtK0s->ProjectionX("x",iBin,iBin),1,0);
+		hSBoutK0s->SetBinContent(iBin,*(y+0));	
+		hSBoutK0s->SetBinError(iBin,*(y+1));
+
+		y = ExtractYield(hV0_IMPtK0s->ProjectionX("x",iBin,iBin),2,0);	// 0 is underflow bin
 		hYieldK0s->SetBinContent(iBin,*(y+0));	
 		hYieldK0s->SetBinError(iBin,*(y+1));
 		y = ExtractYield(hV0_IMPtL->ProjectionX("x",iBin,iBin),2,1);
