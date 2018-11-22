@@ -355,6 +355,8 @@ void readTree_V0(Int_t nEvents=10, Int_t cutFlag=0, const Char_t *inputFile="tes
 
 			hV0_DTofBvpvr->Fill(v0->GetPosAnalysisTrack()->GetP(),v0->GetPosAnalysisTrack()->GetTOFExpBeta(AliPID::kPion),v0->GetRadius());
 			hV0_DTofBvpvr->Fill(v0->GetNegAnalysisTrack()->GetP(),v0->GetNegAnalysisTrack()->GetTOFExpBeta(AliPID::kPion),v0->GetRadius());
+			hV0_DTofBvpvr->Fill(v0->GetPosAnalysisTrack()->GetP(),v0->GetPosAnalysisTrack()->GetTOFExpBeta(AliPID::kProton),v0->GetRadius());
+			hV0_DTofBvpvr->Fill(v0->GetNegAnalysisTrack()->GetP(),v0->GetNegAnalysisTrack()->GetTOFExpBeta(AliPID::kProton),v0->GetRadius());
 
 			//cout << "TOF: " << v0->GetPosAnalysisTrack()->GetTOFExpBeta(AliPID::kPion) << endl;
 
