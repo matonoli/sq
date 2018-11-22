@@ -311,6 +311,8 @@ void readTree_V0(Int_t nEvents=10, Int_t cutFlag=0, const Char_t *inputFile="tes
 	TH2F* hV0_DDedxvp			= new TH2F("hV0_DDedxvp","",100,0,10,300,0,300);
 	TH3F* hV0_DTofBvpvr			= new TH3F("hV0_DTofBvpvr","",100,0,10,120,0.6,1.2,20,0,100);
 
+	TH2F* hV0_Radiusvpt			= new TH2F("hV0_Radiusvpt","",300,0,15,400,0,100);
+
 	nEvents = (nEvents < mChain->GetEntries()) ? nEvents : mChain->GetEntries();
 	for (int iEv = 0; iEv < nEvents; ++iEv)	{
 		
@@ -359,6 +361,7 @@ void readTree_V0(Int_t nEvents=10, Int_t cutFlag=0, const Char_t *inputFile="tes
 			hV0_DTofBvpvr->Fill(v0->GetNegAnalysisTrack()->GetP(),v0->GetNegAnalysisTrack()->GetTOFExpBeta(AliPID::kProton),v0->GetRadius());
 
 			//cout << "TOF: " << v0->GetPosAnalysisTrack()->GetTOFExpBeta(AliPID::kPion) << endl;
+			hV0_Radiusvpt->Fill(v0->GetPt(),v0->GetRadius());
 
 			bool noCuts = 0; float masscut = 0.015;
 			if (noCuts || IsK0s(v0,cutFlag)) 	{
@@ -367,12 +370,11 @@ void readTree_V0(Int_t nEvents=10, Int_t cutFlag=0, const Char_t *inputFile="tes
 				hV0_IMPtK0s->Fill(v0->GetIMK0s(),v0->GetPt()); 		}
 			if (noCuts || IsL(v0,cutFlag)) 		{
 				hV0_IML->Fill(v0->GetIML());		
-				if (fabs(v0->GetIML())<masscut) {
-					hV0_PtL->Fill(v0->GetPt());
+				if (fabs(v0->GetIML())<masscut) hV0_PtL->Fill(v0->GetPt());
 				hV0_IMPtL->Fill(v0->GetIML(),v0->GetPt());
-				printf("TOF: pion : radius is %4.2f , length %4.2f , exptime pi %4.2f , exptime correction pi %4.2f , expsigma pi %4.2f \n", v0->GetRadius(), v0->GetNegAnalysisTrack()->GetTOFLength(), v0->GetNegAnalysisTrack()->GetTOFExpTime(AliPID::kPion), v0->GetNegAnalysisTrack()->GetTOFExpTimeCorrection(AliPID::kPion) , 1);
-				printf("TOF: prot : radius is %4.2f , length %4.2f , exptime pi %4.2f , exptime correction pi %4.2f , expsigma pi %4.2f \n", v0->GetRadius(), v0->GetPosAnalysisTrack()->GetTOFLength(), v0->GetPosAnalysisTrack()->GetTOFExpTime(AliPID::kPion), v0->GetPosAnalysisTrack()->GetTOFExpTimeCorrection(AliPID::kPion) , 1);						
-			}}
+				//printf("TOF: pion : radius is %4.2f , length %4.2f , exptime pi %4.2f , exptime correction pi %4.2f , expsigma pi %4.2f \n", v0->GetRadius(), v0->GetNegAnalysisTrack()->GetTOFLength(), v0->GetNegAnalysisTrack()->GetTOFExpTime(AliPID::kPion), v0->GetNegAnalysisTrack()->GetTOFExpTimeCorrection(AliPID::kPion) , 1);
+				//printf("TOF: prot : radius is %4.2f , length %4.2f , exptime pi %4.2f , exptime correction pi %4.2f , expsigma pi %4.2f \n", v0->GetRadius(), v0->GetPosAnalysisTrack()->GetTOFLength(), v0->GetPosAnalysisTrack()->GetTOFExpTime(AliPID::kPion), v0->GetPosAnalysisTrack()->GetTOFExpTimeCorrection(AliPID::kPion) , 1);						
+			}
 			if (noCuts || IsAL(v0,cutFlag)) 	{
 				hV0_IMAL->Fill(v0->GetIMAL());
 				if (fabs(v0->GetIMAL())<masscut) hV0_PtAL->Fill(v0->GetPt());
