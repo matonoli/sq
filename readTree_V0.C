@@ -356,7 +356,7 @@ void readTree_V0(Int_t nEvents=10, Int_t cutFlag=0, const Char_t *inputFile="tes
 			//hV0_DTofBvpvr->Fill(v0->GetPosAnalysisTrack()->GetP(),v0->GetPosAnalysisTrack()->GetTOFBeta(),v0->GetRadius());
 			//hV0_DTofBvpvr->Fill(v0->GetNegAnalysisTrack()->GetP(),v0->GetNegAnalysisTrack()->GetTOFBeta(),v0->GetRadius());
 
-			cout << "TOF: " << v0->GetPosAnalysisTrack()->GetTOFBeta() << endl;
+			cout << "TOF: " << v0->GetPosAnalysisTrack()->GetTOFExpBeta() << endl;
 
 			bool noCuts = 0; float masscut = 0.015;
 			if (noCuts || IsK0s(v0,cutFlag)) 	{
