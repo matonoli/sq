@@ -309,7 +309,7 @@ void readTree_V0(Int_t nEvents=10, Int_t cutFlag=0, const Char_t *inputFile="tes
 	TH2F* hV0_DTofPivp			= new TH2F("hV0_DTofPivp","",100,0,10,300,-15,15);
 	TH2F* hV0_DDDedx			= new TH2F("hV0_DDDedx","",300,0,300,300,0,300);
 	TH2F* hV0_DDedxvp			= new TH2F("hV0_DDedxvp","",100,0,10,300,0,300);
-	TH3F* hV0_DTofBvpvr			= new TH3F("hV0_DTofBvpvr","",100,0,10,120,0.6,1.2,20,0,100);
+	//TH3F* hV0_DTofBvpvr			= new TH3F("hV0_DTofBvpvr","",100,0,10,120,0.6,1.2,20,0,100);
 
 	nEvents = (nEvents < mChain->GetEntries()) ? nEvents : mChain->GetEntries();
 	for (int iEv = 0; iEv < nEvents; ++iEv)	{
@@ -353,8 +353,8 @@ void readTree_V0(Int_t nEvents=10, Int_t cutFlag=0, const Char_t *inputFile="tes
 			hV0_DDedxvp->Fill(v0->GetPosAnalysisTrack()->GetP(),v0->GetPosAnalysisTrack()->GetTPCdEdx());
 			hV0_DDedxvp->Fill(v0->GetNegAnalysisTrack()->GetP(),v0->GetNegAnalysisTrack()->GetTPCdEdx());
 
-			hV0_DTofBvpvr->Fill(v0->GetPosAnalysisTrack()->GetP(),v0->GetPosAnalysisTrack()->GetTOFBeta(),v0->GetRadius());
-			hV0_DTofBvpvr->Fill(v0->GetNegAnalysisTrack()->GetP(),v0->GetNegAnalysisTrack()->GetTOFBeta(),v0->GetRadius());
+			//hV0_DTofBvpvr->Fill(v0->GetPosAnalysisTrack()->GetP(),v0->GetPosAnalysisTrack()->GetTOFBeta(),v0->GetRadius());
+			//hV0_DTofBvpvr->Fill(v0->GetNegAnalysisTrack()->GetP(),v0->GetNegAnalysisTrack()->GetTOFBeta(),v0->GetRadius());
 
 			bool noCuts = 0; float masscut = 0.015;
 			if (noCuts || IsK0s(v0,cutFlag)) 	{
