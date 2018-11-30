@@ -310,7 +310,7 @@ void readTree_V0(Int_t nEvents=10, Int_t cutFlag=0, const Char_t *inputFile="tes
 	TH2F* hV0_DDDedx			= new TH2F("hV0_DDDedx","",300,0,300,300,0,300);
 	TH2F* hV0_DDedxvp			= new TH2F("hV0_DDedxvp","",100,0,10,300,0,300);
 	TH3F* hV0_DTofBvpvr			= new TH3F("hV0_DTofBvpvr","",100,0,10,120,0.6,1.2,20,0,100);
-	TH3F* hV0_DTofminTpcvr		= new TH2F("hV0_DTofminTpcvr","",200,0,100,300,-5,5);
+	TH2F* hV0_DTofminTpcvr		= new TH2F("hV0_DTofminTpcvr","",200,0,100,300,-5,5);
 
 	TH2F* hV0_Radiusvpt			= new TH2F("hV0_Radiusvpt","",300,0,15,400,0,100);
 
