@@ -370,9 +370,9 @@ void readTree_V0(Int_t nEvents=10, Int_t cutFlag=0, const Char_t *inputFile="tes
 				if (fabs(v0->GetIMK0s())<masscut) hV0_PtK0s->Fill(v0->GetPt());
 				hV0_IMPtK0s->Fill(v0->GetIMK0s(),v0->GetPt());
 				Float_t delta = v0->GetPosAnalysisTrack()->GetNSigmaPionTPC() - v0->GetPosAnalysisTrack()->GetNSigmaPionTOF();
-				hV0_DTofminTpcvr->Fill(delta,v0->GetRadius());
+				hV0_DTofminTpcvr->Fill(v0->GetRadius(),delta);
 				delta = v0->GetNegAnalysisTrack()->GetNSigmaPionTPC() - v0->GetNegAnalysisTrack()->GetNSigmaPionTOF();
-				hV0_DTofminTpcvr->Fill(delta,v0->GetRadius()); 		}
+				hV0_DTofminTpcvr->Fill(v0->GetRadius(),delta); 		}
 			if (noCuts || IsL(v0,cutFlag)) 		{
 				hV0_IML->Fill(v0->GetIML());		
 				if (fabs(v0->GetIML())<masscut) hV0_PtL->Fill(v0->GetPt());
