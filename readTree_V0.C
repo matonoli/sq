@@ -3,17 +3,25 @@
 
 #include <TChain.h>
 #include <TFile.h>
-//#include <AliAnalysisPIDTrack.h>
+#include <TH1.h>
 
 #include <iostream>
 
 using namespace std;
 using namespace RooFit;
 
+class BeforeMain {
+	public:
+		BeforeMain()	{ TH1::SetDefaultSumw2(); }	};
+BeforeMain sumw2;
+
+// GLOBALS
 TChain* mChain;
 AliAnalysisPIDEvent* mEvent;
 TClonesArray* bTracks = 0;
 TClonesArray* bV0s = 0;
+TFile* mFout;
+
 TCanvas* cFits[3];
 int canCounter = 0;
 TString cNames[] = {"K^{0}_{s}", "#Lambda", "#bar{#Lambda}"};
@@ -21,7 +29,52 @@ const Int_t nPtBins = 35;
 Double_t xBins[nPtBins+1] = { 0.00, 0.95, 1.00, 1.10, 1.20, 1.30, 1.40, 1.50, 1.60, 1.70, 
 	1.80, 1.90, 2.00, 2.20, 2.40, 2.60, 2.80, 3.00, 3.20, 3.40, 
 	3.60, 3.80, 4.00, 4.50, 5.00, 5.50, 6.00, 6.50, 7.00, 8.00, 
-	9.00, 10.00, 11.00, 12.00, 13.00, 14.00 }; 
+	9.00, 10.00, 11.00, 12.00, 13.00, 14.00 };
+
+// HISTOGRAMS
+TH1F* hEventMonitor			= new TH1F("hEventMonitor","",10,-0.5,9.5);		// monitors
+TH1F* hV0Monitor			= new TH1F("hV0Monitor","",10,-0.5,9.5);
+TH1F* hTrackMonitor			= new TH1F("hTrackMonitor","",10,-0.5,9.5);
+TH2F* hV0TrCounter			= new TH2F("hV0TrCounter","",100,0,100,100,0,100);
+
+TH1F* hV0_IMK0s				= new TH1F("hV0_IMK0s","",2000,-0.2,0.2);		// v0 stats
+TH1F* hV0_IML				= new TH1F("hV0_IML","",2000,-0.2,0.2);
+TH1F* hV0_IMAL				= new TH1F("hV0_IMAL","",2000,-0.2,0.2);
+TH1F* hV0_PtK0s				= new TH1F("hV0_PtK0s","",nPtBins,xBins);
+TH1F* hV0_PtL				= new TH1F("hV0_PtL","",nPtBins,xBins);
+TH1F* hV0_PtAL				= new TH1F("hV0_PtAL","",nPtBins,xBins);
+TH2F* hV0_IMPtK0s			= new TH2F("hV0_IMPtK0s","",2000,-0.2,0.2,nPtBins,xBins);
+TH2F* hV0_IMPtL				= new TH2F("hV0_IMPtL","",2000,-0.2,0.2,nPtBins,xBins);
+TH2F* hV0_IMPtAL			= new TH2F("hV0_IMPtAL","",2000,-0.2,0.2,nPtBins,xBins);
+TH1F* hYieldK0s				= new TH1F("hYieldK0s","",nPtBins,xBins);
+TH1F* hYieldL				= new TH1F("hYieldL","",nPtBins,xBins);
+TH1F* hYieldAL				= new TH1F("hYieldAL","",nPtBins,xBins);
+TH1F* hV0_DPt 				= new TH1F("hV0_DPt","",200,0,10);
+TH2F* hV0_Radiusvpt			= new TH2F("hV0_Radiusvpt","",300,0,15,400,0,100);
+
+TH1F* hSBinK0s				= new TH1F("hSBinK0s","",nPtBins,xBins);		// sideband stuff
+TH1F* hSBinL				= new TH1F("hSBinL","",nPtBins,xBins);
+TH1F* hSBinAL				= new TH1F("hSBinAL","",nPtBins,xBins);
+TH1F* hSBoutK0s				= new TH1F("hSBoutK0s","",nPtBins,xBins);
+TH1F* hSBoutL				= new TH1F("hSBoutL","",nPtBins,xBins);
+TH1F* hSBoutAL				= new TH1F("hSBoutAL","",nPtBins,xBins);
+
+TH1F* hV0_DHasTPC			= new TH1F("hV0_DHasTPC","",200,0,10);			// pid qa stuff
+TH1F* hV0_DHasTOF			= new TH1F("hV0_DHasTOF","",200,0,10);
+TH2F* hV0_DDTofPiPi			= new TH2F("hV0_DDTofPiPi","",300,-15,15,300,-15,15);
+TH2F* hV0_DDTofPiP			= new TH2F("hV0_DDTofPiP","",300,-15,15,300,-15,15);
+TH2F* hV0_DTofPivp			= new TH2F("hV0_DTofPivp","",100,0,10,300,-15,15);
+TH2F* hV0_DDDedx			= new TH2F("hV0_DDDedx","",300,0,300,300,0,300);
+TH2F* hV0_DDedxvp			= new TH2F("hV0_DDedxvp","",100,0,10,300,0,300);
+TH3F* hV0_DTofBvpvr			= new TH3F("hV0_DTofBvpvr","",100,0,10,120,0.6,1.2,20,0,100);
+TH2F* hV0_DTofminTpcvr		= new TH2F("hV0_DTofminTpcvr","",400,0,100,500,-5,5);
+TH2F* hV0_DTofminTpcvrK0spi	= new TH2F("hV0_DTofminTpcvrK0spi","",400,0,100,500,-5,5);
+TH2F* hV0_DTofminTpcvrLpi	= new TH2F("hV0_DTofminTpcvrLpi","",400,0,100,500,-5,5);
+TH2F* hV0_DTofminTpcvrLpr	= new TH2F("hV0_DTofminTpcvrLpr","",400,0,100,500,-5,5);
+
+TH1F* hTrDCA				= new TH1F("hTrDCA","",400,0,100);
+TH3F* hTrPtPhiEta			= new TH3F("hTrPtPhiEta","",200,0,10,200,-0.5,6.5,200,-1.,1.);
+TH1F* hTrTofminTpc			= new TH1F("hTrTofminTpc","",500,-5,5);
 
 bool makeChain(const Char_t *inputFile="test.list") {
 
@@ -158,7 +211,7 @@ void myLegendSetUp(TLegend *currentLegend=0, float currentTextSize=0.07, int col
 	return;
 }
 
-Float_t* ExtractYield(TH1D* hist, Int_t method = 0, Int_t part = 0) {	// extracting with RooFit, 0 is sideband, 1 is sideband bg 2 is fit
+Float_t* ExtractYield(TH1D* hist, Int_t method = 0, Int_t part = 0) {	// extracting with RooFit, 0 is sideband, 1 is sideband bg, 2 is fit
 	
 	static Float_t val[2];
 	val[0] = 0; val[1] = 0;
@@ -245,74 +298,15 @@ void readTree_V0(Int_t nEvents=10, Int_t cutFlag=0, const Char_t *inputFile="tes
 
 	gROOT->LoadMacro("$HOME/sq/load_libraries.C");
 	load_libraries();
+	TList* lHist = gDirectory->GetList();
+	int iHist = 0;
 
 	if (!makeChain(inputFile)) printf("Couldn't create the chain! \n", );
 	else printf("Chain created with %i entries \n", mChain->GetEntries());
 
-	//*bTracks 	= new TClonesArray("AliAnalysisPIDTrack");
-	//*bV0s 		= new TClonesArray("AliAnalysisPIDV0");
 	mChain->SetBranchAddress("AnalysisTrack",&bTracks);
 	mChain->SetBranchAddress("AnalysisV0Track",&bV0s);
-	mChain->SetBranchAddress("AnalysisEvent",&mEvent);
-
-	/*const Int_t nPtBins = 59;
-  	Double_t xBins[nPtBins+1] = { 0.01, 0.10, 0.12, 0.14, 0.16, 0.18, 0.20, 0.25, 0.30, 0.35, 
-    	0.40, 0.45, 0.50, 0.55, 0.60, 0.65, 0.70, 0.75, 0.80, 0.85, 
-    	0.90, 0.95, 1.00, 1.10, 1.20, 1.30, 1.40, 1.50, 1.60, 1.70, 
-    	1.80, 1.90, 2.00, 2.20, 2.40, 2.60, 2.80, 3.00, 3.20, 3.40, 
-    	3.60, 3.80, 4.00, 4.50, 5.00, 5.50, 6.00, 6.50, 7.00, 8.00, 
-    	9.00, 10.00, 11.00, 12.00, 13.00, 14.00, 15.00, 16.00, 18.00, 20.00 };*/
-
-
-	TH1F* hEventMonitor			= new TH1F("hEventMonitor","",10,-0.5,9.5);
-	TH1F* hV0Monitor			= new TH1F("hV0Monitor","",10,-0.5,9.5);
-	TH1F* hTrackMonitor			= new TH1F("hTrackMonitor","",10,-0.5,9.5);
-	TH2F* hV0TrCounter			= new TH2F("hV0TrCounter","",100,0,100,100,0,100);
-
-	TH1F* hV0_IMK0s				= new TH1F("hV0_IMK0s","",2000,-0.2,0.2);
-	TH1F* hV0_PtK0s				= new TH1F("hV0_PtK0s","",nPtBins,xBins);
-	TH2F* hV0_IMPtK0s			= new TH2F("hV0_IMPtK0s","",2000,-0.2,0.2,nPtBins,xBins);
-	TH1F* hYieldK0s				= new TH1F("hYieldK0s","",nPtBins,xBins);
-	TH1F* hV0_IML				= new TH1F("hV0_IML","",2000,-0.2,0.2);
-	TH1F* hV0_PtL				= new TH1F("hV0_PtL","",nPtBins,xBins);
-	TH2F* hV0_IMPtL				= new TH2F("hV0_IMPtL","",2000,-0.2,0.2,nPtBins,xBins);
-	TH1F* hYieldL				= new TH1F("hYieldL","",nPtBins,xBins);
-	TH1F* hV0_IMAL				= new TH1F("hV0_IMAL","",2000,-0.2,0.2);
-	TH1F* hV0_PtAL				= new TH1F("hV0_PtAL","",nPtBins,xBins);
-	TH2F* hV0_IMPtAL			= new TH2F("hV0_IMPtAL","",2000,-0.2,0.2,nPtBins,xBins);
-	TH1F* hYieldAL				= new TH1F("hYieldAL","",nPtBins,xBins);
-	hV0_IMK0s->Sumw2();
-	hV0_PtK0s->Sumw2();
-	hYieldK0s->Sumw2();
-	hV0_IML->Sumw2();
-	hV0_PtL->Sumw2();
-	hYieldL->Sumw2();
-	hV0_IMAL->Sumw2();
-	hV0_PtAL->Sumw2();
-	hYieldAL->Sumw2();
-
-
-	TH1F* hSBinK0s				= new TH1F("hSBinK0s","",nPtBins,xBins);
-	TH1F* hSBinL				= new TH1F("hSBinL","",nPtBins,xBins);
-	TH1F* hSBinAL				= new TH1F("hSBinAL","",nPtBins,xBins);
-	TH1F* hSBoutK0s				= new TH1F("hSBoutK0s","",nPtBins,xBins);
-	TH1F* hSBoutL				= new TH1F("hSBoutL","",nPtBins,xBins);
-	TH1F* hSBoutAL				= new TH1F("hSBoutAL","",nPtBins,xBins);
-
-	TH1F* hV0_DHasTPC			= new TH1F("hV0_DHasTPC","",200,0,10);
-	hV0_DHasTPC->Sumw2();
-	TH1F* hV0_DHasTOF			= new TH1F("hV0_DHasTOF","",200,0,10);
-	hV0_DHasTOF->Sumw2();
-	TH1F* hV0_DPt 				= new TH1F("hV0_DPt","",200,0,10);
-	TH2F* hV0_DDTofPiPi			= new TH2F("hV0_DDTofPiPi","",300,-15,15,300,-15,15);
-	TH2F* hV0_DDTofPiP			= new TH2F("hV0_DDTofPiP","",300,-15,15,300,-15,15);
-	TH2F* hV0_DTofPivp			= new TH2F("hV0_DTofPivp","",100,0,10,300,-15,15);
-	TH2F* hV0_DDDedx			= new TH2F("hV0_DDDedx","",300,0,300,300,0,300);
-	TH2F* hV0_DDedxvp			= new TH2F("hV0_DDedxvp","",100,0,10,300,0,300);
-	TH3F* hV0_DTofBvpvr			= new TH3F("hV0_DTofBvpvr","",100,0,10,120,0.6,1.2,20,0,100);
-	TH2F* hV0_DTofminTpcvr		= new TH2F("hV0_DTofminTpcvr","",400,0,100,500,-5,5);
-
-	TH2F* hV0_Radiusvpt			= new TH2F("hV0_Radiusvpt","",300,0,15,400,0,100);
+	mChain->SetBranchAddress("AnalysisEvent",&mEvent);	
 
 	nEvents = (nEvents < mChain->GetEntries()) ? nEvents : mChain->GetEntries();
 	for (int iEv = 0; iEv < nEvents; ++iEv)	{
@@ -323,13 +317,12 @@ void readTree_V0(Int_t nEvents=10, Int_t cutFlag=0, const Char_t *inputFile="tes
 		mChain->GetEntry(iEv);
 		if (!mEvent) continue;
 		hEventMonitor->Fill(1);
-		//printf("event vz is %f \n", mEvent->GetVertexZ());
 
-		if (iEv==0) mEvent->PrintEventSelection();
+		if (!iEv) mEvent->PrintEventSelection();
 		if (!SelectEvent(mEvent)) continue;
 		hEventMonitor->Fill(2);
 
-		Int_t V0Count = 0; 
+		Int_t V0Count = 0; 			// VZERO ANALYSIS HERE
 		Int_t nV0s = bV0s->GetEntriesFast();
 		for (int iV0 = 0; iV0 < nV0s; ++iV0)	{
 			
@@ -342,51 +335,64 @@ void readTree_V0(Int_t nEvents=10, Int_t cutFlag=0, const Char_t *inputFile="tes
 			hV0Monitor->Fill(2);
 			V0Count++;
 
-			if (v0->GetPosAnalysisTrack()->HasTPCPID()) hV0_DHasTPC->Fill(v0->GetPosAnalysisTrack()->GetPt());
-			if (v0->GetNegAnalysisTrack()->HasTPCPID()) hV0_DHasTPC->Fill(v0->GetNegAnalysisTrack()->GetPt());
-			if (v0->GetPosAnalysisTrack()->HasTOFPID()) hV0_DHasTOF->Fill(v0->GetPosAnalysisTrack()->GetPt());
-			if (v0->GetNegAnalysisTrack()->HasTOFPID()) hV0_DHasTOF->Fill(v0->GetNegAnalysisTrack()->GetPt());
-			hV0_DPt->Fill(v0->GetPosAnalysisTrack()->GetPt());
-			hV0_DPt->Fill(v0->GetNegAnalysisTrack()->GetPt());
-			hV0_DDTofPiPi->Fill(v0->GetPosAnalysisTrack()->GetNSigmaPionTOF(),v0->GetNegAnalysisTrack()->GetNSigmaPionTOF());
-			hV0_DDTofPiP->Fill(v0->GetPosAnalysisTrack()->GetNSigmaPionTOF(),v0->GetNegAnalysisTrack()->GetNSigmaProtonTOF());
-			hV0_DTofPivp->Fill(v0->GetPosAnalysisTrack()->GetP(),v0->GetPosAnalysisTrack()->GetNSigmaPionTOF());
-			hV0_DTofPivp->Fill(v0->GetNegAnalysisTrack()->GetP(),v0->GetNegAnalysisTrack()->GetNSigmaPionTOF());
-			hV0_DDDedx->Fill(v0->GetPosAnalysisTrack()->GetTPCdEdx(),v0->GetNegAnalysisTrack()->GetTPCdEdx());
-			hV0_DDedxvp->Fill(v0->GetPosAnalysisTrack()->GetP(),v0->GetPosAnalysisTrack()->GetTPCdEdx());
-			hV0_DDedxvp->Fill(v0->GetNegAnalysisTrack()->GetP(),v0->GetNegAnalysisTrack()->GetTPCdEdx());
+			AliAnalysisPIDTrack* trP = v0->GetPosAnalysisTrack();
+			AliAnalysisPIDTrack* trN = v0->GetNegAnalysisTrack();
 
-			hV0_DTofBvpvr->Fill(v0->GetPosAnalysisTrack()->GetP(),v0->GetPosAnalysisTrack()->GetTOFExpBeta(AliPID::kPion),v0->GetRadius());
-			hV0_DTofBvpvr->Fill(v0->GetNegAnalysisTrack()->GetP(),v0->GetNegAnalysisTrack()->GetTOFExpBeta(AliPID::kPion),v0->GetRadius());
-			hV0_DTofBvpvr->Fill(v0->GetPosAnalysisTrack()->GetP(),v0->GetPosAnalysisTrack()->GetTOFExpBeta(AliPID::kProton),v0->GetRadius());
-			hV0_DTofBvpvr->Fill(v0->GetNegAnalysisTrack()->GetP(),v0->GetNegAnalysisTrack()->GetTOFExpBeta(AliPID::kProton),v0->GetRadius());
+			if (trP->HasTPCPID()) hV0_DHasTPC->Fill(trP->GetPt());
+			if (trN->HasTPCPID()) hV0_DHasTPC->Fill(trN->GetPt());
+			if (trP->HasTOFPID()) hV0_DHasTOF->Fill(trP->GetPt());
+			if (trN->HasTOFPID()) hV0_DHasTOF->Fill(trN->GetPt());
+			hV0_DPt->Fill(trP->GetPt());
+			hV0_DPt->Fill(trN->GetPt());
+			hV0_DDTofPiPi->Fill(trP->GetNSigmaPionTOF(),trN->GetNSigmaPionTOF());
+			hV0_DDTofPiP->Fill(trP->GetNSigmaPionTOF(),trN->GetNSigmaProtonTOF());
+			hV0_DTofPivp->Fill(trP->GetP(),trP->GetNSigmaPionTOF());
+			hV0_DTofPivp->Fill(trN->GetP(),trN->GetNSigmaPionTOF());
+			hV0_DDDedx->Fill(trP->GetTPCdEdx(),trN->GetTPCdEdx());
+			hV0_DDedxvp->Fill(trP->GetP(),trP->GetTPCdEdx());
+			hV0_DDedxvp->Fill(trN->GetP(),trN->GetTPCdEdx());
 
-			//cout << "TOF: " << v0->GetPosAnalysisTrack()->GetTOFExpBeta(AliPID::kPion) << endl;
+			hV0_DTofBvpvr->Fill(trP->GetP(),trP->GetTOFExpBeta(AliPID::kPion),v0->GetRadius());
+			hV0_DTofBvpvr->Fill(trN->GetP(),trN->GetTOFExpBeta(AliPID::kPion),v0->GetRadius());
+			hV0_DTofBvpvr->Fill(trP->GetP(),trP->GetTOFExpBeta(AliPID::kProton),v0->GetRadius());
+			hV0_DTofBvpvr->Fill(trN->GetP(),trN->GetTOFExpBeta(AliPID::kProton),v0->GetRadius());
+
 			hV0_Radiusvpt->Fill(v0->GetPt(),v0->GetRadius());
 
-			bool noCuts = 0; float masscut = 0.015;
+			bool noCuts = 0; float masscut = 0.005;
 			if (noCuts || IsK0s(v0,cutFlag)) 	{
 				hV0_IMK0s->Fill(v0->GetIMK0s());	
-				if (fabs(v0->GetIMK0s())<masscut) hV0_PtK0s->Fill(v0->GetPt());
 				hV0_IMPtK0s->Fill(v0->GetIMK0s(),v0->GetPt());
-				Float_t delta = v0->GetPosAnalysisTrack()->GetNSigmaPionTPC() - v0->GetPosAnalysisTrack()->GetNSigmaPionTOF();
-				hV0_DTofminTpcvr->Fill(v0->GetRadius(),delta);
-				delta = v0->GetNegAnalysisTrack()->GetNSigmaPionTPC() - v0->GetNegAnalysisTrack()->GetNSigmaPionTOF();
-				hV0_DTofminTpcvr->Fill(v0->GetRadius(),delta); 		}
+				if (fabs(v0->GetIMK0s())<2.*masscut) {
+					hV0_PtK0s->Fill(v0->GetPt());
+					Float_t delta = trP->GetNSigmaPionTOF() - trP->GetNSigmaPionTPC();	//TOF STUDY, cutflag should be 1 or 2
+					hV0_DTofminTpcvrK0spi->Fill(v0->GetRadius(),delta);
+					delta = trN->GetNSigmaPionTOF() - trN->GetNSigmaPionTPC();
+					hV0_DTofminTpcvrK0spi->Fill(v0->GetRadius(),delta); 		}
+				}
 			if (noCuts || IsL(v0,cutFlag)) 		{
-				hV0_IML->Fill(v0->GetIML());		
-				if (fabs(v0->GetIML())<masscut) hV0_PtL->Fill(v0->GetPt());
-				hV0_IMPtL->Fill(v0->GetIML(),v0->GetPt());
-				//printf("TOF: pion : radius is %4.2f , length %4.2f , exptime pi %4.2f , exptime correction pi %4.2f , expsigma pi %4.2f \n", v0->GetRadius(), v0->GetNegAnalysisTrack()->GetTOFLength(), v0->GetNegAnalysisTrack()->GetTOFExpTime(AliPID::kPion), v0->GetNegAnalysisTrack()->GetTOFExpTimeCorrection(AliPID::kPion) , 1);
-				//printf("TOF: prot : radius is %4.2f , length %4.2f , exptime pi %4.2f , exptime correction pi %4.2f , expsigma pi %4.2f \n", v0->GetRadius(), v0->GetPosAnalysisTrack()->GetTOFLength(), v0->GetPosAnalysisTrack()->GetTOFExpTime(AliPID::kPion), v0->GetPosAnalysisTrack()->GetTOFExpTimeCorrection(AliPID::kPion) , 1);						
-			}
+				hV0_IML->Fill(v0->GetIML());
+				hV0_IMPtL->Fill(v0->GetIML(),v0->GetPt());		
+				if (fabs(v0->GetIML())<masscut) {
+					hV0_PtL->Fill(v0->GetPt());
+					Float_t delta = trP->GetNSigmaProtonTOF() - trP->GetNSigmaProtonTPC();
+					hV0_DTofminTpcvrLpr->Fill(v0->GetRadius(),delta);
+					delta = trN->GetNSigmaPionTOF() - trN->GetNSigmaPionTPC();
+					hV0_DTofminTpcvrLpi->Fill(v0->GetRadius(),delta); 			}
+				}
 			if (noCuts || IsAL(v0,cutFlag)) 	{
 				hV0_IMAL->Fill(v0->GetIMAL());
-				if (fabs(v0->GetIMAL())<masscut) hV0_PtAL->Fill(v0->GetPt());
-				hV0_IMPtAL->Fill(v0->GetIMAL(),v0->GetPt());		}
+				hV0_IMPtAL->Fill(v0->GetIMAL(),v0->GetPt());
+				if (fabs(v0->GetIMAL())<masscut) {
+					hV0_PtAL->Fill(v0->GetPt());
+					Float_t delta = trP->GetNSigmaPionTOF() - trP->GetNSigmaPionTPC();
+					hV0_DTofminTpcvrLpi->Fill(v0->GetRadius(),delta);
+					delta = trN->GetNSigmaProtonTOF() - trN->GetNSigmaProtonTPC();
+					hV0_DTofminTpcvrLpr->Fill(v0->GetRadius(),delta);		}
+				}
 		}
 
-		Int_t trCount = 0;
+		Int_t trCount = 0;		// TRACKS ANALYSIS HERE
 		Int_t nTracks = bTracks->GetEntriesFast();
 		for (int iTr = 0; iTr < nTracks; ++iTr)	{
 			
@@ -394,20 +400,24 @@ void readTree_V0(Int_t nEvents=10, Int_t cutFlag=0, const Char_t *inputFile="tes
 			AliAnalysisPIDTrack* track = (AliAnalysisPIDTrack*)bTracks->At(iTr);
 			if (!track) continue;
 			hTrackMonitor->Fill(1);
+
+			hTrDCA->Fill(track->GetImpactParameter(0));
+			hTrPtPhiEta->Fill(track->GetPt(),track->GetPhi(),track->GetEta());
 			
 			if (!SelectTrack(track)) continue;
 			hTrackMonitor->Fill(2);
 			trCount++;
+
+			Float_t delta = track->GetNSigmaPionTOF() - track->GetNSigmaPionTPC();
+			hTrTofminTpc->Fill(delta);
 		}
 		
 		hV0TrCounter->Fill(V0Count,trCount);
-	}
+	}	// EVENT LOOP FINISHED
 
-	for (int iC = 0; iC < 3; ++iC)
-	{
+	for (int iC = 0; iC < 3; ++iC)	{
 		cFits[iC] = new TCanvas(Form("cFits%i",iC),"",2800,2000);
-		cFits[iC]->Divide(7,5,0.0005,0.0005);
-	}
+		cFits[iC]->Divide(7,5,0.0005,0.0005);	}
 
 	//ExtractYield((TH1D*)hV0_IMK0s);
 	for (int iBin = 1; iBin < nPtBins+1; ++iBin)
@@ -511,7 +521,12 @@ void readTree_V0(Int_t nEvents=10, Int_t cutFlag=0, const Char_t *inputFile="tes
 	can1->SaveAs(path+"pt_al.png");
 
 	printf(" WHAT IS UP \n", );
-	//hEventMonitor->Draw();
 
-	//new TCanvas;
+	// WRITING OBJECTS TO OUTPUT FILE
+	if (outputFile!="")	mFout = new TFile(outputFile,"RECREATE");
+	iHist = 0; while (lHist->At(iHist)) {			// should use an iterator...
+		TString objName(lHist->At(iHist)->GetName());
+		if (objName.BeginsWith("h")) lHist->At(iHist)->Write();
+		iHist++;
+	}
 }
