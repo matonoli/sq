@@ -71,6 +71,10 @@ TH2F* hV0_DTofminTpcvr		= new TH2F("hV0_DTofminTpcvr","",400,0,100,500,-5,5);
 TH2F* hV0_DTofminTpcvrK0spi	= new TH2F("hV0_DTofminTpcvrK0spi","",400,0,100,500,-5,5);
 TH2F* hV0_DTofminTpcvrLpi	= new TH2F("hV0_DTofminTpcvrLpi","",400,0,100,500,-5,5);
 TH2F* hV0_DTofminTpcvrLpr	= new TH2F("hV0_DTofminTpcvrLpr","",400,0,100,500,-5,5);
+TH2F* hV0_DTpcvpK0spi 		= new TH2F("hV0_DTpcvpK0spi","",450,0,15,400,-10.,10.);
+TH2F* hV0_DTpcvpLpr 		= new TH2F("hV0_DTpcvpLpr","",450,0,15,400,-10.,10.);
+TH2F* hV0_DTofvpK0spi 		= new TH2F("hV0_DTofvpK0spi","",450,0,15,400,-10.,10.);
+TH2F* hV0_DTofvpLpr 		= new TH2F("hV0_DTofvpLpr","",450,0,15,400,-10.,10.);
 
 TH1F* hTrDCA				= new TH1F("hTrDCA","",400,0,100);
 TH3F* hTrPtPhiEta			= new TH3F("hTrPtPhiEta","",200,0,10,200,-0.5,6.5,200,-1.,1.);
@@ -263,7 +267,7 @@ Float_t* ExtractYield(TH1D* hist, Int_t method = 0, Int_t part = 0) {	// extract
 		
 			//RooAddPdf fTotal("fTotal","fTotal",RooArgList(fGaus1,fGaus2),RooArgList(nGaus1,nGaus2));
 			RooAddPdf fTotal("fTotal","fTotal",RooArgList(fGaus1,fGaus2,fPolBg),RooArgList(nGaus1,nGaus2,nPolBg));
-			RooFitResult* fR = fTotal.fitTo(DT_hist,Save(),"q");
+			RooFitResult* fR = fTotal.fitTo(DT_hist,Save(),PrintLevel(-1));
 		
 			RooFormulaVar nGaus("nGaus","nGaus1+nGaus2",RooArgList(nGaus1,nGaus2));
 			//printf("Errors are %f and %f, total is %f or %f wrt to %f \n", nGaus1.getError(), nGaus2.getError(), nGaus1.getError()+nGaus2.getError(),sqrt(nGaus1.getError()*nGaus1.getError()+nGaus2.getError()*nGaus2.getError()),nGaus.getPropagatedError(*fR));
@@ -368,7 +372,11 @@ void readTree_V0(Int_t nEvents=10, Int_t cutFlag=0, const Char_t *inputFile="tes
 					Float_t delta = trP->GetNSigmaPionTOF() - trP->GetNSigmaPionTPC();	//TOF STUDY, cutflag should be 1 or 2
 					hV0_DTofminTpcvrK0spi->Fill(v0->GetRadius(),delta);
 					delta = trN->GetNSigmaPionTOF() - trN->GetNSigmaPionTPC();
-					hV0_DTofminTpcvrK0spi->Fill(v0->GetRadius(),delta); 		}
+					hV0_DTofminTpcvrK0spi->Fill(v0->GetRadius(),delta);
+					hV0_DTpcvpK0spi->Fill(trP->GetP(),trP->GetNSigmaPionTPC());
+					hV0_DTpcvpK0spi->Fill(trN->GetP(),trN->GetNSigmaPionTPC());
+					hV0_DTofvpK0spi->Fill(trP->GetP(),trP->GetNSigmaPionTOF());
+					hV0_DTofvpK0spi->Fill(trN->GetP(),trN->GetNSigmaPionTOF()); 		}
 				}
 			if (noCuts || IsL(v0,cutFlag)) 		{
 				hV0_IML->Fill(v0->GetIML());
@@ -378,7 +386,9 @@ void readTree_V0(Int_t nEvents=10, Int_t cutFlag=0, const Char_t *inputFile="tes
 					Float_t delta = trP->GetNSigmaProtonTOF() - trP->GetNSigmaProtonTPC();
 					hV0_DTofminTpcvrLpr->Fill(v0->GetRadius(),delta);
 					delta = trN->GetNSigmaPionTOF() - trN->GetNSigmaPionTPC();
-					hV0_DTofminTpcvrLpi->Fill(v0->GetRadius(),delta); 			}
+					hV0_DTofminTpcvrLpi->Fill(v0->GetRadius(),delta);
+					hV0_DTpcvpLpr->Fill(trP->GetP(),trP->GetNSigmaProtonTPC());
+					hV0_DTofvpLpr->Fill(trP->GetP(),trP->GetNSigmaProtonTOF()); 			}
 				}
 			if (noCuts || IsAL(v0,cutFlag)) 	{
 				hV0_IMAL->Fill(v0->GetIMAL());
@@ -485,7 +495,9 @@ void readTree_V0(Int_t nEvents=10, Int_t cutFlag=0, const Char_t *inputFile="tes
 	hSBinL->SetLineColor(kGreen+2);
 	hSBinAL->SetLineColor(kGreen+2);
 
-	TString path("$HOME/sq/pics/");
+	TString path = Form("pics_%s/",outputFile);// ("$HOME/sq/pics/");//("$HOME/sq/pics/");
+	path.ReplaceAll(".root","");
+	gSystem->Exec(Form("mkdir %s", path.Data()));
 	cFits[0]->SaveAs(path+"f_k0s.png");
 	cFits[1]->SaveAs(path+"f_l.png");
 	cFits[2]->SaveAs(path+"f_al.png");
@@ -499,9 +511,9 @@ void readTree_V0(Int_t nEvents=10, Int_t cutFlag=0, const Char_t *inputFile="tes
 
 	TLegend *legpt = new TLegend(0.6,0.55,0.9,0.75);
 	myLegendSetUp(legpt,0.028,1);
-	legpt->AddEntry(hV0_PtK0s,"bin count in (-0.015,0.015)","l");
+	legpt->AddEntry(hV0_PtK0s,"bin count in fixed range","l");
 	legpt->AddEntry(hYieldK0s,"gaus+gaus+pol1 fit","l");
-	legpt->AddEntry(hSBinK0s,"sideband","l");
+	legpt->AddEntry(hSBinK0s,"sideband with 3 and 6 RMS","l");
 			
 	hV0_PtK0s->Draw();
 	can1->SetLogy();
@@ -519,6 +531,23 @@ void readTree_V0(Int_t nEvents=10, Int_t cutFlag=0, const Char_t *inputFile="tes
 	hSBinAL->Draw("same");
 	legpt->Draw();
 	can1->SaveAs(path+"pt_al.png");
+
+	TH1D* hpy = hV0_DTpcvpK0spi->ProjectionY();
+	hpy->SetTitle(";n#sigma_{TPC}^{#pi};Entries");
+	hpy->Draw();
+	can1->SaveAs(path+"eff_tpck0spi.png");
+	hpy = hV0_DTofvpK0spi->ProjectionY();
+	hpy->SetTitle(";n#sigma_{TOF}^{#pi};Entries");
+	hpy->Draw();
+	can1->SaveAs(path+"eff_tofk0spi.png");
+	hpy = hV0_DTpcvpLpr->ProjectionY();
+	hpy->SetTitle(";n#sigma_{TPC}^{p};Entries");
+	hpy->Draw();
+	can1->SaveAs(path+"eff_tpclpr.png");
+	hpy = hV0_DTofvpLpr->ProjectionY();
+	hpy->SetTitle(";n#sigma_{TOF}^{p};Entries");
+	hpy->Draw();
+	can1->SaveAs(path+"eff_toflpr.png");
 
 	printf(" WHAT IS UP \n", );
 
