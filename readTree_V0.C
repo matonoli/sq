@@ -20,7 +20,10 @@ TChain* mChain;
 AliAnalysisPIDEvent* mEvent;
 TClonesArray* bTracks = 0;
 TClonesArray* bV0s = 0;
+TClonesArray* bParticles = 0;
 TFile* mFout;
+Int_t flagMC = 0;
+const Int_t pdgIds[] = {310, 3122, -3122};
 
 TCanvas* cFits[3];
 int canCounter = 0;
@@ -80,10 +83,21 @@ TH1F* hTrDCA				= new TH1F("hTrDCA","",400,0,100);
 TH3F* hTrPtPhiEta			= new TH3F("hTrPtPhiEta","",200,0,10,200,-0.5,6.5,200,-1.,1.);
 TH1F* hTrTofminTpc			= new TH1F("hTrTofminTpc","",500,-5,5);
 
+
+TH1F* hMCV0Monitor			= new TH1F("hMCV0Monitor","",10,-0.5,9.5);
+TH1F* hRCV0Counter			= new TH1F("hRCV0Counter","",100,0,100);
+TH1F* hMCV0_PtK0s			= new TH1F("hMCV0_PtK0s","",nPtBins,xBins);
+TH1F* hMCV0_PtL				= new TH1F("hMCV0_PtL","",nPtBins,xBins);
+TH1F* hMCV0_PtAL			= new TH1F("hMCV0_PtAL","",nPtBins,xBins);
+TH1F* hRCV0_PtK0s			= new TH1F("hRCV0_PtK0s","",nPtBins,xBins);
+TH1F* hRCV0_PtL				= new TH1F("hRCV0_PtL","",nPtBins,xBins);
+TH1F* hRCV0_PtAL			= new TH1F("hRCV0_PtAL","",nPtBins,xBins);
+
 bool makeChain(const Char_t *inputFile="test.list") {
 
 	if (!mChain) mChain = new TChain("PIDTree");
 	TString inputFileStr(inputFile);
+	flagMC = inputFileStr.Contains("MC");
 	string const dirFile = inputFileStr.Data();
 	if (dirFile.find(".lis") != string::npos)	{
 		
@@ -142,6 +156,13 @@ bool SelectV0(AliAnalysisPIDV0* v0) {
 	if (!SelectV0daughter(v0->GetNegAnalysisTrack()))	return false;
 
 	// IM photonic e+e- rejection cut?
+
+	return true;
+}
+
+bool SelectV0_MC(AliAnalysisPIDParticle* p, Int_t part) {
+
+	if (p->GetPdgCode() != pdgIds[part]) 				return false;
 
 	return true;
 }
@@ -216,7 +237,7 @@ void myLegendSetUp(TLegend *currentLegend=0, float currentTextSize=0.07, int col
 }
 
 Float_t* ExtractYield(TH1D* hist, Int_t method = 0, Int_t part = 0) {	// extracting with RooFit, 0 is sideband, 1 is sideband bg, 2 is fit
-	
+																		// part: 0 for k0s, 1 for lambdas
 	static Float_t val[2];
 	val[0] = 0; val[1] = 0;
 	Float_t fitMin = -0.03, fitMax = 0.03;
@@ -310,13 +331,14 @@ void readTree_V0(Int_t nEvents=10, Int_t cutFlag=0, const Char_t *inputFile="tes
 
 	mChain->SetBranchAddress("AnalysisTrack",&bTracks);
 	mChain->SetBranchAddress("AnalysisV0Track",&bV0s);
-	mChain->SetBranchAddress("AnalysisEvent",&mEvent);	
+	mChain->SetBranchAddress("AnalysisEvent",&mEvent);
+	if (flagMC) mChain->SetBranchAddress("AnalysisParticle",&bParticles);	
 
 	nEvents = (nEvents < mChain->GetEntries()) ? nEvents : mChain->GetEntries();
 	for (int iEv = 0; iEv < nEvents; ++iEv)	{
 		
 		hEventMonitor->Fill(0);
-		if (iEv%100000==0) printf("Processing: %i out of total %i events...\n", iEv, nEvents);
+		if (iEv%10000==0) printf("Processing: %i out of total %i events...\n", iEv, nEvents);
 		bTracks->Clear();
 		mChain->GetEntry(iEv);
 		if (!mEvent) continue;
@@ -325,6 +347,70 @@ void readTree_V0(Int_t nEvents=10, Int_t cutFlag=0, const Char_t *inputFile="tes
 		if (!iEv) mEvent->PrintEventSelection();
 		if (!SelectEvent(mEvent)) continue;
 		hEventMonitor->Fill(2);
+
+		if (flagMC) //V0 MC analysis
+		{
+			Int_t nPs = bParticles->GetEntriesFast();
+			for (int iP = 0; iP < nPs; ++iP)	{
+				
+				hMCV0Monitor->Fill(0);
+				AliAnalysisPIDParticle* p = (AliAnalysisPIDParticle*)bParticles->At(iP);
+				if (!p) continue;
+				hMCV0Monitor->Fill(1);
+
+				Int_t v0id;
+				if (SelectV0_MC(p,0)) {
+					hMCV0Monitor->Fill(2);
+					hMCV0_PtK0s->Fill(p->GetPt()); 
+					v0id = 0;}
+				else if (SelectV0_MC(p,1)) {
+					hMCV0Monitor->Fill(2);
+					hMCV0_PtL->Fill(p->GetPt()); 
+					v0id = 1;}
+				else if (SelectV0_MC(p,2)) {
+					hMCV0Monitor->Fill(2);
+					hMCV0_PtAL->Fill(p->GetPt()); 
+					v0id = 2;}
+				else continue;
+
+				Int_t mcLabel = p->GetLabel();
+
+				Int_t rcV0Count = 0;
+				Int_t nV0s = bV0s->GetEntriesFast();
+				for (int iV0 = 0; iV0 < nV0s; ++iV0)	{
+					
+					AliAnalysisPIDV0* v0rc = (AliAnalysisPIDV0*)bV0s->At(iV0);
+					if (!v0rc) continue;
+
+					if (v0rc->GetMCPdgCode() != pdgIds[v0id]) continue;
+
+					AliAnalysisPIDTrack* trPrc = v0rc->GetPosAnalysisTrack();
+					AliAnalysisPIDTrack* trNrc = v0rc->GetNegAnalysisTrack();
+					if (trPrc->GetMCMotherLabel() != mcLabel) continue;
+					//if (trPrc->GetMCMotherPrimary() != 1) continue;
+					rcV0Count++;
+					if (rcV0Count>0) {
+						printf("nEV %i nP %i v0 finds %i , v0id %i , mcpt %f , rcpt %f , mK0 %f , mL %f , tr+pt %f , tr-pt %f : \n", iEv, iP, rcV0Count, v0id, p->GetPt(), v0rc->GetPt(), v0rc->GetIMK0s(), v0rc->GetIML(), trPrc->GetPt(), trNrc->GetPt());
+						printf("-------------------------- r %f , dcad %f , cos %f , eta %f , dcapv %f \n", v0rc->GetRadius(), v0rc->GetDCAV0Daughters(), v0rc->GetV0CosinePA(), v0rc->GetEta(), v0rc->GetDCAPV());
+					}
+
+					if (!SelectV0(v0rc)) continue;
+					if (v0id == 0 && IsK0s(v0rc,cutFlag)) 	{
+						hRCV0_PtK0s->Fill(v0rc->GetPt());			}
+					if (v0id == 1 && IsL(v0rc,cutFlag)) 		{
+						hRCV0_PtL->Fill(v0rc->GetPt());				}
+					if (v0id == 2 && IsAL(v0rc,cutFlag)) 		{
+						hRCV0_PtAL->Fill(v0rc->GetPt());			}
+
+					//break;
+				}
+				hRCV0Counter->Fill(rcV0Count);
+				if (rcV0Count > 1) {
+					printf("nEV %i nP %i counter %i Too many v0s reconstructed!!!\n", iEv, iP, rcV0Count);
+					//return 0;
+				}
+			}
+		}
 
 		Int_t V0Count = 0; 			// VZERO ANALYSIS HERE
 		Int_t nV0s = bV0s->GetEntriesFast();
@@ -363,7 +449,7 @@ void readTree_V0(Int_t nEvents=10, Int_t cutFlag=0, const Char_t *inputFile="tes
 
 			hV0_Radiusvpt->Fill(v0->GetPt(),v0->GetRadius());
 
-			bool noCuts = 0; float masscut = 0.005;
+			bool noCuts = 0; float masscut = 0.0075;
 			if (noCuts || IsK0s(v0,cutFlag)) 	{
 				hV0_IMK0s->Fill(v0->GetIMK0s());	
 				hV0_IMPtK0s->Fill(v0->GetIMK0s(),v0->GetPt());
@@ -430,7 +516,7 @@ void readTree_V0(Int_t nEvents=10, Int_t cutFlag=0, const Char_t *inputFile="tes
 		cFits[iC]->Divide(7,5,0.0005,0.0005);	}
 
 	//ExtractYield((TH1D*)hV0_IMK0s);
-	for (int iBin = 1; iBin < nPtBins+1; ++iBin)
+	for (int iBin = 1; iBin > nPtBins+1; ++iBin)
 	{
 		Float_t* y;
 		y = ExtractYield(hV0_IMPtK0s->ProjectionX("x",iBin,iBin),0,0);
@@ -481,6 +567,15 @@ void readTree_V0(Int_t nEvents=10, Int_t cutFlag=0, const Char_t *inputFile="tes
 	hSBinL->Scale(1,"width");
 	hSBinAL->Add(hSBoutAL,-1.);
 	hSBinAL->Scale(1,"width");
+
+	if (flagMC) {
+		hMCV0_PtK0s->Scale(1,"width");
+		hMCV0_PtL->Scale(1,"width");
+		hMCV0_PtAL->Scale(1,"width");
+		hRCV0_PtK0s->Scale(1,"width");
+		hRCV0_PtL->Scale(1,"width");
+		hRCV0_PtAL->Scale(1,"width");
+	}
 
 	hV0_DHasTPC->SetTitle("HasTPC PID; p_{T} (GeV/#it{c}); Efficiency");
 	hV0_DHasTOF->SetTitle("HasTPC PID; p_{T} (GeV/#it{c}); Efficiency");
@@ -550,6 +645,7 @@ void readTree_V0(Int_t nEvents=10, Int_t cutFlag=0, const Char_t *inputFile="tes
 	can1->SaveAs(path+"eff_toflpr.png");
 
 	printf(" WHAT IS UP \n", );
+	printf(" MC FLAG is %i \n", (int)flagMC);
 
 	// WRITING OBJECTS TO OUTPUT FILE
 	if (outputFile!="")	mFout = new TFile(outputFile,"RECREATE");
@@ -557,5 +653,5 @@ void readTree_V0(Int_t nEvents=10, Int_t cutFlag=0, const Char_t *inputFile="tes
 		TString objName(lHist->At(iHist)->GetName());
 		if (objName.BeginsWith("h")) lHist->At(iHist)->Write();
 		iHist++;
-	}
+	}	// can be replaced with embed->GetHistList()->Write(); ?
 }
