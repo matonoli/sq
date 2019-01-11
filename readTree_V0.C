@@ -18,16 +18,19 @@ BeforeMain sumw2;
 // GLOBALS
 TChain* mChain;
 AliAnalysisPIDEvent* mEvent;
+TFile* mFout;
 TClonesArray* bTracks = 0;
 TClonesArray* bV0s = 0;
 TClonesArray* bParticles = 0;
-TFile* mFout;
+TNtuple* mMasses = new TNtuple("mMasses","v0 masses","MassDT:lPt:lPart");
 Int_t flagMC = 0;
-const Int_t pdgIds[] = {310, 3122, -3122};
 
-TCanvas* cFits[3];
+
+const Int_t PDG_IDS[] = {310, 3122, -3122};
+
+TCanvas* cFits[6];
 int canCounter = 0;
-TString cNames[] = {"K^{0}_{s}", "#Lambda", "#bar{#Lambda}"};
+TString cNames[] = {"K^{0}_{s}", "K^{0}_{s} ub", "#Lambda", "#Lambda ub", "#bar{#Lambda}", "#bar{#Lambda} ub"};
 const Int_t nPtBins = 35;
 Double_t xBins[nPtBins+1] = { 0.00, 0.95, 1.00, 1.10, 1.20, 1.30, 1.40, 1.50, 1.60, 1.70, 
 	1.80, 1.90, 2.00, 2.20, 2.40, 2.60, 2.80, 3.00, 3.20, 3.40, 
@@ -52,6 +55,9 @@ TH2F* hV0_IMPtAL			= new TH2F("hV0_IMPtAL","",2000,-0.2,0.2,nPtBins,xBins);
 TH1F* hYieldK0s				= new TH1F("hYieldK0s","",nPtBins,xBins);
 TH1F* hYieldL				= new TH1F("hYieldL","",nPtBins,xBins);
 TH1F* hYieldAL				= new TH1F("hYieldAL","",nPtBins,xBins);
+TH1F* hYieldUBK0s			= new TH1F("hYieldUBK0s","",nPtBins,xBins);
+TH1F* hYieldUBL				= new TH1F("hYieldUBL","",nPtBins,xBins);
+TH1F* hYieldUBAL			= new TH1F("hYieldUBAL","",nPtBins,xBins);
 TH1F* hV0_DPt 				= new TH1F("hV0_DPt","",200,0,10);
 TH2F* hV0_Radiusvpt			= new TH2F("hV0_Radiusvpt","",300,0,15,400,0,100);
 
@@ -93,7 +99,7 @@ TH1F* hRCV0_PtK0s			= new TH1F("hRCV0_PtK0s","",nPtBins,xBins);
 TH1F* hRCV0_PtL				= new TH1F("hRCV0_PtL","",nPtBins,xBins);
 TH1F* hRCV0_PtAL			= new TH1F("hRCV0_PtAL","",nPtBins,xBins);
 
-bool makeChain(const Char_t *inputFile="test.list") {
+bool MakeChain(const Char_t *inputFile="test.list") {
 
 	if (!mChain) mChain = new TChain("PIDTree");
 	TString inputFileStr(inputFile);
@@ -145,7 +151,7 @@ bool SelectV0(AliAnalysisPIDV0* v0) {
 
 	if (fabs(v0->GetEta()) > 0.8) 				return false; //superfluous
 	if (v0->GetPt() < 1.0)						return false;
-	if (v0->GetPt() > 12.0)						return false;
+	if (v0->GetPt() > 14.0)						return false;
 	//if (v0->GetDCAPV() < 0.05)				return false; // dca of extrapolated v0 to pv? or daughters to pv?
 	if (v0->GetDCAV0Daughters() > 0.5)			return false;
 	if (v0->GetV0CosinePA() < 0.997)			return false; // :(
@@ -162,7 +168,7 @@ bool SelectV0(AliAnalysisPIDV0* v0) {
 
 bool SelectV0_MC(AliAnalysisPIDParticle* p, Int_t part) {
 
-	if (p->GetPdgCode() != pdgIds[part]) 				return false;
+	if (p->GetPdgCode() != PDG_IDS[part]) 				return false;
 
 	return true;
 }
@@ -209,7 +215,6 @@ bool IsL(AliAnalysisPIDV0* v0, Int_t cutFlag) {
 	return true;
 }
 
-
 bool IsAL(AliAnalysisPIDV0* v0, Int_t cutFlag) {
 
 	AliAnalysisPIDTrack* trP = v0->GetPosAnalysisTrack();
@@ -236,7 +241,8 @@ void myLegendSetUp(TLegend *currentLegend=0, float currentTextSize=0.07, int col
 	return;
 }
 
-Float_t* ExtractYield(TH1D* hist, Int_t method = 0, Int_t part = 0) {	// extracting with RooFit, 0 is sideband, 1 is sideband bg, 2 is fit
+Float_t* ExtractYield(TH1D* hist = 0, TTree* tree = 0, Int_t method = 0, Int_t part = 0) {	// extracting with RooFit, 0 is sideband, 1 is sideband bg, 2 is fit
+																		// 3 is unbinned fit
 																		// part: 0 for k0s, 1 for lambdas
 	static Float_t val[2];
 	val[0] = 0; val[1] = 0;
@@ -267,10 +273,13 @@ Float_t* ExtractYield(TH1D* hist, Int_t method = 0, Int_t part = 0) {	// extract
 			val[1] = sqrt(val[0]);
 			break;
 
-		case 2 :
-			hist->Rebin(8);
+		case 2 :	// fallthrough
+		case 3 :
 			RooRealVar MassDT("MassDT","#Delta m_{inv} (GeV/#it{c}^{2})",fitMin,fitMax);
-			RooDataHist DT_hist("DT_hist","DT_hist",MassDT,Import(*hist));
+			if (method==2) {	
+				hist->Rebin(8);
+				RooDataHist DT_set("DT_set","DT_hist",MassDT,Import(*hist)); }
+			else RooDataSet DT_set("DT_set","DT_tree",MassDT,Import(*tree));
 		
 			RooRealVar pGaus1A("pGaus1A","Mean 1",-0.004,0.004);
 			RooRealVar pGaus1B("pGaus1B","Sigma 1",0,0.01);
@@ -288,14 +297,14 @@ Float_t* ExtractYield(TH1D* hist, Int_t method = 0, Int_t part = 0) {	// extract
 		
 			//RooAddPdf fTotal("fTotal","fTotal",RooArgList(fGaus1,fGaus2),RooArgList(nGaus1,nGaus2));
 			RooAddPdf fTotal("fTotal","fTotal",RooArgList(fGaus1,fGaus2,fPolBg),RooArgList(nGaus1,nGaus2,nPolBg));
-			RooFitResult* fR = fTotal.fitTo(DT_hist,Save(),PrintLevel(-1));
+			RooFitResult* fR = fTotal.fitTo(DT_set,Save(),PrintLevel(-1));
 		
 			RooFormulaVar nGaus("nGaus","nGaus1+nGaus2",RooArgList(nGaus1,nGaus2));
 			//printf("Errors are %f and %f, total is %f or %f wrt to %f \n", nGaus1.getError(), nGaus2.getError(), nGaus1.getError()+nGaus2.getError(),sqrt(nGaus1.getError()*nGaus1.getError()+nGaus2.getError()*nGaus2.getError()),nGaus.getPropagatedError(*fR));
 		
-			cFits[canCounter%3]->cd(1+canCounter/3);
+			cFits[canCounter%6]->cd(1+canCounter/6);
 			RooPlot* plot1 = MassDT.frame(Title(" "));
-			DT_hist.plotOn(plot1,MarkerSize(0.4));
+			DT_set.plotOn(plot1,MarkerSize(0.4));
 			fTotal.plotOn(plot1,LineWidth(1),LineColor(kRed));
 			plot1->SetMinimum(1e-05);
 			plot1->SetMaximum(1.35*plot1->GetMaximum());
@@ -304,8 +313,8 @@ Float_t* ExtractYield(TH1D* hist, Int_t method = 0, Int_t part = 0) {	// extract
 			plot1->Draw();
 			TLegend *leg1 = new TLegend(0.075,0.7,0.5,0.88);
 			myLegendSetUp(leg1,0.065,1);
-			leg1->AddEntry((TObject*)0,Form("%4.2f < p_{T} < %4.2f (GeV/#it{c})",xBins[canCounter/3],xBins[1+canCounter/3])," ");
-			leg1->AddEntry((TObject*)0,cNames[canCounter%3]+Form(" , #chi^{2}/ndf = %4.2f",plot1->chiSquare())," ");
+			leg1->AddEntry((TObject*)0,Form("%4.2f < p_{T} < %4.2f (GeV/#it{c})",xBins[canCounter/6],xBins[1+canCounter/6])," ");
+			leg1->AddEntry((TObject*)0,cNames[canCounter%6]+Form(" , #chi^{2}/ndf = %4.2f",plot1->chiSquare())," ");
 			leg1->Draw();
 	
 			val[0] = nGaus.getVal();
@@ -313,6 +322,7 @@ Float_t* ExtractYield(TH1D* hist, Int_t method = 0, Int_t part = 0) {	// extract
 			val[1] = nGaus.getPropagatedError(*fR);
 			canCounter++;
 			break;
+
 	}
 
 	return val;
@@ -326,7 +336,7 @@ void readTree_V0(Int_t nEvents=10, Int_t cutFlag=0, const Char_t *inputFile="tes
 	TList* lHist = gDirectory->GetList();
 	int iHist = 0;
 
-	if (!makeChain(inputFile)) printf("Couldn't create the chain! \n", );
+	if (!MakeChain(inputFile)) printf("Couldn't create the chain! \n", );
 	else printf("Chain created with %i entries \n", mChain->GetEntries());
 
 	mChain->SetBranchAddress("AnalysisTrack",&bTracks);
@@ -337,12 +347,19 @@ void readTree_V0(Int_t nEvents=10, Int_t cutFlag=0, const Char_t *inputFile="tes
 	nEvents = (nEvents < mChain->GetEntries()) ? nEvents : mChain->GetEntries();
 	for (int iEv = 0; iEv < nEvents; ++iEv)	{
 		
+		//if (iEv!=139254) continue;
+
 		hEventMonitor->Fill(0);
 		if (iEv%10000==0) printf("Processing: %i out of total %i events...\n", iEv, nEvents);
 		bTracks->Clear();
 		mChain->GetEntry(iEv);
 		if (!mEvent) continue;
 		hEventMonitor->Fill(1);
+
+		Float_t vz = mEvent->GetVertexZ();
+		Int_t refmult = mEvent->GetReferenceMultiplicity();
+		Float_t v0mult = mEvent->GetV0Mmultiplicity() ;
+		//printf("EVENT #%i , VZ is %9.9f , rmult is %i , v0mult is %f \n", iEv, vz, refmult, v0mult);
 
 		if (!iEv) mEvent->PrintEventSelection();
 		if (!SelectEvent(mEvent)) continue;
@@ -372,27 +389,27 @@ void readTree_V0(Int_t nEvents=10, Int_t cutFlag=0, const Char_t *inputFile="tes
 					hMCV0_PtAL->Fill(p->GetPt()); 
 					v0id = 2;}
 				else continue;
-
+																// use vectors somewhere somehow for matching?
 				Int_t mcLabel = p->GetLabel();
 
 				Int_t rcV0Count = 0;
 				Int_t nV0s = bV0s->GetEntriesFast();
-				for (int iV0 = 0; iV0 < nV0s; ++iV0)	{
+				for (int iV0 = 0; (iV0 < nV0s && rcV0Count < 1); ++iV0)	{
 					
 					AliAnalysisPIDV0* v0rc = (AliAnalysisPIDV0*)bV0s->At(iV0);
 					if (!v0rc) continue;
 
-					if (v0rc->GetMCPdgCode() != pdgIds[v0id]) continue;
+					if (v0rc->GetMCPdgCode() != PDG_IDS[v0id]) continue;
 
 					AliAnalysisPIDTrack* trPrc = v0rc->GetPosAnalysisTrack();
 					AliAnalysisPIDTrack* trNrc = v0rc->GetNegAnalysisTrack();
 					if (trPrc->GetMCMotherLabel() != mcLabel) continue;
 					//if (trPrc->GetMCMotherPrimary() != 1) continue;
 					rcV0Count++;
-					if (rcV0Count>0) {
-						printf("nEV %i nP %i v0 finds %i , v0id %i , mcpt %f , rcpt %f , mK0 %f , mL %f , tr+pt %f , tr-pt %f : \n", iEv, iP, rcV0Count, v0id, p->GetPt(), v0rc->GetPt(), v0rc->GetIMK0s(), v0rc->GetIML(), trPrc->GetPt(), trNrc->GetPt());
-						printf("-------------------------- r %f , dcad %f , cos %f , eta %f , dcapv %f \n", v0rc->GetRadius(), v0rc->GetDCAV0Daughters(), v0rc->GetV0CosinePA(), v0rc->GetEta(), v0rc->GetDCAPV());
-					}
+					//if (rcV0Count>0) {
+					//	printf("nEV %i nP %i v0 finds %i , v0id %i , mcpt %f , rcpt %f , mK0 %f , mL %f , tr+pt %f , tr-pt %f : \n", iEv, iP, rcV0Count, v0id, p->GetPt(), v0rc->GetPt(), v0rc->GetIMK0s(), v0rc->GetIML(), trPrc->GetPt(), trNrc->GetPt());
+					//	printf("-------------------------- r %f , dcad %f , cos %f , eta %f , dcapv %f \n", v0rc->GetRadius(), v0rc->GetDCAV0Daughters(), v0rc->GetV0CosinePA(), v0rc->GetEta(), v0rc->GetDCAPV());
+					//}
 
 					if (!SelectV0(v0rc)) continue;
 					if (v0id == 0 && IsK0s(v0rc,cutFlag)) 	{
@@ -432,6 +449,7 @@ void readTree_V0(Int_t nEvents=10, Int_t cutFlag=0, const Char_t *inputFile="tes
 			if (trN->HasTPCPID()) hV0_DHasTPC->Fill(trN->GetPt());
 			if (trP->HasTOFPID()) hV0_DHasTOF->Fill(trP->GetPt());
 			if (trN->HasTOFPID()) hV0_DHasTOF->Fill(trN->GetPt());
+
 			hV0_DPt->Fill(trP->GetPt());
 			hV0_DPt->Fill(trN->GetPt());
 			hV0_DDTofPiPi->Fill(trP->GetNSigmaPionTOF(),trN->GetNSigmaPionTOF());
@@ -441,18 +459,17 @@ void readTree_V0(Int_t nEvents=10, Int_t cutFlag=0, const Char_t *inputFile="tes
 			hV0_DDDedx->Fill(trP->GetTPCdEdx(),trN->GetTPCdEdx());
 			hV0_DDedxvp->Fill(trP->GetP(),trP->GetTPCdEdx());
 			hV0_DDedxvp->Fill(trN->GetP(),trN->GetTPCdEdx());
-
 			hV0_DTofBvpvr->Fill(trP->GetP(),trP->GetTOFExpBeta(AliPID::kPion),v0->GetRadius());
 			hV0_DTofBvpvr->Fill(trN->GetP(),trN->GetTOFExpBeta(AliPID::kPion),v0->GetRadius());
 			hV0_DTofBvpvr->Fill(trP->GetP(),trP->GetTOFExpBeta(AliPID::kProton),v0->GetRadius());
 			hV0_DTofBvpvr->Fill(trN->GetP(),trN->GetTOFExpBeta(AliPID::kProton),v0->GetRadius());
-
 			hV0_Radiusvpt->Fill(v0->GetPt(),v0->GetRadius());
 
 			bool noCuts = 0; float masscut = 0.0075;
 			if (noCuts || IsK0s(v0,cutFlag)) 	{
 				hV0_IMK0s->Fill(v0->GetIMK0s());	
 				hV0_IMPtK0s->Fill(v0->GetIMK0s(),v0->GetPt());
+				mMasses->Fill(v0->GetIMK0s(),v0->GetPt(),0);
 				if (fabs(v0->GetIMK0s())<2.*masscut) {
 					hV0_PtK0s->Fill(v0->GetPt());
 					Float_t delta = trP->GetNSigmaPionTOF() - trP->GetNSigmaPionTPC();	//TOF STUDY, cutflag should be 1 or 2
@@ -466,7 +483,8 @@ void readTree_V0(Int_t nEvents=10, Int_t cutFlag=0, const Char_t *inputFile="tes
 				}
 			if (noCuts || IsL(v0,cutFlag)) 		{
 				hV0_IML->Fill(v0->GetIML());
-				hV0_IMPtL->Fill(v0->GetIML(),v0->GetPt());		
+				hV0_IMPtL->Fill(v0->GetIML(),v0->GetPt());
+				mMasses->Fill(v0->GetIML(),v0->GetPt(),1);		
 				if (fabs(v0->GetIML())<masscut) {
 					hV0_PtL->Fill(v0->GetPt());
 					Float_t delta = trP->GetNSigmaProtonTOF() - trP->GetNSigmaProtonTPC();
@@ -479,6 +497,7 @@ void readTree_V0(Int_t nEvents=10, Int_t cutFlag=0, const Char_t *inputFile="tes
 			if (noCuts || IsAL(v0,cutFlag)) 	{
 				hV0_IMAL->Fill(v0->GetIMAL());
 				hV0_IMPtAL->Fill(v0->GetIMAL(),v0->GetPt());
+				mMasses->Fill(v0->GetIMAL(),v0->GetPt(),2);
 				if (fabs(v0->GetIMAL())<masscut) {
 					hV0_PtAL->Fill(v0->GetPt());
 					Float_t delta = trP->GetNSigmaPionTOF() - trP->GetNSigmaPionTPC();
@@ -511,43 +530,55 @@ void readTree_V0(Int_t nEvents=10, Int_t cutFlag=0, const Char_t *inputFile="tes
 		hV0TrCounter->Fill(V0Count,trCount);
 	}	// EVENT LOOP FINISHED
 
-	for (int iC = 0; iC < 3; ++iC)	{
+	for (int iC = 0; iC < 6; ++iC)	{
 		cFits[iC] = new TCanvas(Form("cFits%i",iC),"",2800,2000);
 		cFits[iC]->Divide(7,5,0.0005,0.0005);	}
 
+	gROOT->cd();	//TTree operations can't be done in read only files
 	//ExtractYield((TH1D*)hV0_IMK0s);
-	for (int iBin = 1; iBin > nPtBins+1; ++iBin)
+	for (int iBin = 1; iBin < nPtBins+1; ++iBin)		// 0 is underflow
 	{
+		//if (iBin != 4) continue;
 		Float_t* y;
-		y = ExtractYield(hV0_IMPtK0s->ProjectionX("x",iBin,iBin),0,0);
+		y = ExtractYield(hV0_IMPtK0s->ProjectionX("x",iBin,iBin),0,0,0);
 		hSBinK0s->SetBinContent(iBin,*(y+0));	
 		hSBinK0s->SetBinError(iBin,*(y+1));
-		y = ExtractYield(hV0_IMPtK0s->ProjectionX("x",iBin,iBin),1,0);
+		y = ExtractYield(hV0_IMPtK0s->ProjectionX("x",iBin,iBin),0,1,0);
 		hSBoutK0s->SetBinContent(iBin,*(y+0));	
 		hSBoutK0s->SetBinError(iBin,*(y+1));
-		y = ExtractYield(hV0_IMPtK0s->ProjectionX("x",iBin,iBin),2,0);	// 0 is underflow bin
+		y = ExtractYield(hV0_IMPtK0s->ProjectionX("x",iBin,iBin),0,2,0);	// 0 is underflow bin
 		hYieldK0s->SetBinContent(iBin,*(y+0));	
 		hYieldK0s->SetBinError(iBin,*(y+1));
+		y = ExtractYield(0,mMasses->CopyTree(Form("lPt>%f&&lPt<%f&&lPart==0",xBins[iBin-1],xBins[iBin])),3,0);
+		hYieldUBK0s->SetBinContent(iBin,*(y+0));	
+		hYieldUBK0s->SetBinError(iBin,*(y+1));
+		//y = ExtractYield(0,mMasses->CopyTree("lPart==0"),3,0);
 
-		y = ExtractYield(hV0_IMPtL->ProjectionX("x",iBin,iBin),0,1);
+		y = ExtractYield(hV0_IMPtL->ProjectionX("x",iBin,iBin),0,0,1);
 		hSBinL->SetBinContent(iBin,*(y+0));	
 		hSBinL->SetBinError(iBin,*(y+1));
-		y = ExtractYield(hV0_IMPtL->ProjectionX("x",iBin,iBin),1,1);
+		y = ExtractYield(hV0_IMPtL->ProjectionX("x",iBin,iBin),0,1,1);
 		hSBoutL->SetBinContent(iBin,*(y+0));	
 		hSBoutL->SetBinError(iBin,*(y+1));
-		y = ExtractYield(hV0_IMPtL->ProjectionX("x",iBin,iBin),2,1);
+		y = ExtractYield(hV0_IMPtL->ProjectionX("x",iBin,iBin),0,2,1);
 		hYieldL->SetBinContent(iBin,*(y+0));	
 		hYieldL->SetBinError(iBin,*(y+1));
+		y = ExtractYield(0,mMasses->CopyTree(Form("lPt>%f&&lPt<%f&&lPart==1",xBins[iBin-1],xBins[iBin])),3,1);
+		hYieldUBL->SetBinContent(iBin,*(y+0));	
+		hYieldUBL->SetBinError(iBin,*(y+1));
 
-		y = ExtractYield(hV0_IMPtAL->ProjectionX("x",iBin,iBin),0,1);
+		y = ExtractYield(hV0_IMPtAL->ProjectionX("x",iBin,iBin),0,0,1);
 		hSBinAL->SetBinContent(iBin,*(y+0));	
 		hSBinAL->SetBinError(iBin,*(y+1));
-		y = ExtractYield(hV0_IMPtAL->ProjectionX("x",iBin,iBin),1,1);
+		y = ExtractYield(hV0_IMPtAL->ProjectionX("x",iBin,iBin),0,1,1);
 		hSBoutAL->SetBinContent(iBin,*(y+0));	
 		hSBoutAL->SetBinError(iBin,*(y+1));
-		y = ExtractYield(hV0_IMPtAL->ProjectionX("x",iBin,iBin),2,1);
+		y = ExtractYield(hV0_IMPtAL->ProjectionX("x",iBin,iBin),0,2,1);
 		hYieldAL->SetBinContent(iBin,*(y+0));	
 		hYieldAL->SetBinError(iBin,*(y+1));
+		y = ExtractYield(0,mMasses->CopyTree(Form("lPt>%f&&lPt<%f&&lPart==2",xBins[iBin-1],xBins[iBin])),3,1);
+		hYieldUBAL->SetBinContent(iBin,*(y+0));	
+		hYieldUBAL->SetBinError(iBin,*(y+1));
 		//hYieldK0s->SetBinContent(iBin,*(ExtractYield(hV0_IMPtK0s->ProjectionX("x",iBin,iBin))+0));
 		//hYieldL->SetBinContent(iBin,*(ExtractYield(hV0_IMPtL->ProjectionX("x",iBin,iBin))+0));
 		//hYieldAL->SetBinContent(iBin,*(ExtractYield(hV0_IMPtAL->ProjectionX("x",iBin,iBin))+0));
@@ -559,6 +590,9 @@ void readTree_V0(Int_t nEvents=10, Int_t cutFlag=0, const Char_t *inputFile="tes
 	hYieldK0s->Scale(1,"width");
 	hYieldL->Scale(1,"width");
 	hYieldAL->Scale(1,"width");
+	hYieldUBK0s->Scale(1,"width");
+	hYieldUBL->Scale(1,"width");
+	hYieldUBAL->Scale(1,"width");
 	hV0_DHasTPC->Divide(hV0_DPt);
 	hV0_DHasTOF->Divide(hV0_DPt);
 	hSBinK0s->Add(hSBoutK0s,-1.);
@@ -589,13 +623,46 @@ void readTree_V0(Int_t nEvents=10, Int_t cutFlag=0, const Char_t *inputFile="tes
 	hSBinK0s->SetLineColor(kGreen+2);
 	hSBinL->SetLineColor(kGreen+2);
 	hSBinAL->SetLineColor(kGreen+2);
+	hYieldUBK0s->SetLineColor(kMagenta);
+	hYieldUBL->SetLineColor(kMagenta);
+	hYieldUBAL->SetLineColor(kMagenta);
+
+	hV0_PtK0s->SetMarkerStyle(20);
+	hSBinK0s->SetMarkerStyle(20);
+	hYieldK0s->SetMarkerStyle(20);
+	hYieldUBK0s->SetMarkerStyle(20);
+	hV0_PtK0s->SetMarkerColor(kRed);
+	hSBinK0s->SetMarkerColor(kGreen+2);
+	hYieldK0s->SetMarkerColor(kBlue);
+	hYieldUBK0s->SetMarkerColor(kMagenta);
+
+	hV0_PtL->SetMarkerStyle(20);
+	hSBinL->SetMarkerStyle(20);
+	hYieldL->SetMarkerStyle(20);
+	hYieldUBL->SetMarkerStyle(20);
+	hV0_PtL->SetMarkerColor(kRed);
+	hSBinL->SetMarkerColor(kGreen+2);
+	hYieldL->SetMarkerColor(kBlue);
+	hYieldUBL->SetMarkerColor(kMagenta);
+
+	hV0_PtAL->SetMarkerStyle(20);
+	hSBinAL->SetMarkerStyle(20);
+	hYieldAL->SetMarkerStyle(20);
+	hYieldUBAL->SetMarkerStyle(20);
+	hV0_PtAL->SetMarkerColor(kRed);
+	hSBinAL->SetMarkerColor(kGreen+2);
+	hYieldAL->SetMarkerColor(kBlue);
+	hYieldUBAL->SetMarkerColor(kMagenta);
 
 	TString path = Form("pics_%s/",outputFile);// ("$HOME/sq/pics/");//("$HOME/sq/pics/");
 	path.ReplaceAll(".root","");
 	gSystem->Exec(Form("mkdir %s", path.Data()));
 	cFits[0]->SaveAs(path+"f_k0s.png");
-	cFits[1]->SaveAs(path+"f_l.png");
-	cFits[2]->SaveAs(path+"f_al.png");
+	cFits[1]->SaveAs(path+"f_ubk0s.png");
+	cFits[2]->SaveAs(path+"f_l.png");
+	cFits[3]->SaveAs(path+"f_ubl.png");
+	cFits[4]->SaveAs(path+"f_al.png");
+	cFits[5]->SaveAs(path+"f_ubal.png");
 	cFits[0]->SaveAs(path+"f_k0s.png");
 
 	TCanvas* can1 = new TCanvas("can1","",1000,700);
@@ -604,25 +671,53 @@ void readTree_V0(Int_t nEvents=10, Int_t cutFlag=0, const Char_t *inputFile="tes
 	hV0_DHasTPC->Draw();
 	can1->SaveAs(path+"eff_tpc.png");
 
+	hRCV0_PtK0s->Divide(hMCV0_PtK0s);
+	hRCV0_PtK0s->SetTitle(";p_{T} (GeV/#it{c});K_{S}^{0} reconstruction efficiency");
+	hRCV0_PtK0s->GetYaxis()->SetRangeUser(0.,1.1);
+	hRCV0_PtK0s->SetLineColor(kRed);
+	hRCV0_PtK0s->SetMarkerStyle(20);
+	hRCV0_PtK0s->Draw();
+	can1->SaveAs(path+"effrec_k0s.png");
+	hRCV0_PtL->Divide(hMCV0_PtL);
+	hRCV0_PtL->SetTitle(";p_{T} (GeV/#it{c});#Lambda reconstruction efficiency");
+	hRCV0_PtL->GetYaxis()->SetRangeUser(0.,1.1);
+	hRCV0_PtL->SetLineColor(kRed);
+	hRCV0_PtL->SetMarkerStyle(20);
+	hRCV0_PtL->Draw();
+	can1->SaveAs(path+"effrec_l.png");
+	hRCV0_PtAL->Divide(hMCV0_PtAL);
+	hRCV0_PtAL->SetTitle(";p_{T} (GeV/#it{c});#bar{#Lambda} reconstruction efficiency");
+	hRCV0_PtAL->GetYaxis()->SetRangeUser(0.,1.1);
+	hRCV0_PtAL->SetLineColor(kRed);
+	hRCV0_PtAL->SetMarkerStyle(20);
+	hRCV0_PtAL->Draw();
+	can1->SaveAs(path+"effrec_al.png");
+
 	TLegend *legpt = new TLegend(0.6,0.55,0.9,0.75);
 	myLegendSetUp(legpt,0.028,1);
 	legpt->AddEntry(hV0_PtK0s,"bin count in fixed range","l");
 	legpt->AddEntry(hYieldK0s,"gaus+gaus+pol1 fit","l");
+	legpt->AddEntry(hYieldUBK0s,"gaus+gaus+pol1 ub fit","l");
 	legpt->AddEntry(hSBinK0s,"sideband with 3 and 6 RMS","l");
+
+	//make effi plots
 			
 	hV0_PtK0s->Draw();
 	can1->SetLogy();
 	hYieldK0s->Draw("same");
+	hYieldUBK0s->Draw("same");
 	hSBinK0s->Draw("same");
 	legpt->Draw();
 	can1->SaveAs(path+"pt_k0s.png");
 	hV0_PtL->Draw();
 	hYieldL->Draw("same");
+	hYieldUBL->Draw("same");
 	hSBinL->Draw("same");
 	legpt->Draw();
 	can1->SaveAs(path+"pt_l.png");
 	hV0_PtAL->Draw();
 	hYieldAL->Draw("same");
+	hYieldUBAL->Draw("same");
 	hSBinAL->Draw("same");
 	legpt->Draw();
 	can1->SaveAs(path+"pt_al.png");
@@ -654,4 +749,5 @@ void readTree_V0(Int_t nEvents=10, Int_t cutFlag=0, const Char_t *inputFile="tes
 		if (objName.BeginsWith("h")) lHist->At(iHist)->Write();
 		iHist++;
 	}	// can be replaced with embed->GetHistList()->Write(); ?
+	mMasses->Write();
 }
